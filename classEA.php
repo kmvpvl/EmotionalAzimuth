@@ -2,10 +2,16 @@
 class EAException extends Exception {
 
 }
-class EmotionalDict {
+class EmotionalDictionary {
     protected $eLexemes;
+    function __construct() {
+        $this->eLexemes = array();
+    }
     function add(EmotionalLexeme $eL) {
-        
+        $this->eLexemes[$eL->index()] = $eL;
+    }
+    function save() {
+        echo "EmotionalDictionary\n", serialize($this->eLexemes);
     }
 }
 class EmotionalText {
@@ -30,7 +36,7 @@ class EmotionalLexeme {
     protected $emotion;
     function __construct($_src) {
         $src = $_src;
-        $emotion = new EmotionalVector();
+        unset($emotion);
         $this->normalize();
         $this->calcEmotionIndex();
     }
@@ -41,7 +47,7 @@ class EmotionalLexeme {
     protected function calcEmotionIndex() {
         
     }
-    public function md5(){
+    public function index(){
         return md5($this->normal, true);
     }
 }
