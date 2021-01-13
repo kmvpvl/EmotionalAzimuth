@@ -67,14 +67,7 @@ foreach ($sentences as $sentence) {
 		) continue;
 		if (in_array('С', $part_of_speech)) {
 			if ($prev_noun) {
-				if ($prev_adj) {
-					echo $prev_adj, " ", $prev_noun, "\n";   
-					$prev_noun = "";
-					$prev_part = "";
-					$prev_adj = "";
-				} else {
-					echo $prev_noun, "\n";   
-				}
+				echo $prev_noun, "\n";   
 			}
 			$prev_noun = $morphy->castFormByGramInfo($word,'С',array('ЕД','ИМ'),TRUE)[0];
 			if ($prev_adj) {
@@ -85,7 +78,7 @@ foreach ($sentences as $sentence) {
 			}
 			continue;
 		}
-		if (in_array('П', $part_of_speech) || in_array('КР_П', $part_of_speech)) {
+		if (in_array('П', $part_of_speech)) {
 			if ($prev_adj) {
 				if ($prev_noun) {
 					echo $prev_adj, " ", $prev_noun, "\n";   
@@ -97,6 +90,40 @@ foreach ($sentences as $sentence) {
 				}
 			}
 			$prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'П',array('ЕД','ИМ'),TRUE)[0];
+			continue;
+		}
+		if (in_array('КР_ПРИЛ', $part_of_speech)) {
+			if ($prev_adj) {
+				if ($prev_noun) {
+					echo $prev_adj, " ", $prev_noun, "\n";   
+					$prev_noun = "";
+					$prev_part = "";
+					$prev_adj = "";
+				} else {
+					echo $prev_adj, "\n";   
+				}
+			}
+			$prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'П',array('ЕД','ИМ'),TRUE)[0];
+			if ($prev_noun) {
+				echo $prev_adj, " ", $prev_noun, "\n";   
+				$prev_noun = "";
+				$prev_part = "";
+				$prev_adj = "";
+			}
+			continue;
+		}
+		if (in_array('ПРИЧАСТИЕ', $part_of_speech) ) {
+			if ($prev_adj) {
+				if ($prev_noun) {
+					echo $prev_adj, " ", $prev_noun, "\n";   
+					$prev_noun = "";
+					$prev_part = "";
+					$prev_adj = "";
+				} else {
+					echo $prev_adj, "\n";   
+				}
+			}
+			$prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'ПРИЧАСТИЕ',array('ЕД','ИМ'),TRUE)[0];
 			if ($prev_noun) {
 				echo $prev_adj, " ", $prev_noun, "\n";   
 				$prev_noun = "";
@@ -227,12 +254,12 @@ foreach ($sentences as $sentence) {
 echo '----------';
 //var_dump($morphy->getBaseForm('ДЕТЕЙ'));
 //var_dump($morphy->getGramInfo('СТОЛЬ'));
-//var_dump($morphy->getGramInfo('ОЧЕНЬ'));
+//var_dump($morphy->getGramInfo('ПОБОЧНЫЙ'));
 //var_dump($morphy->castFormByGramInfo('КРАСНЫХ','П',array('МН','ИМ'),TRUE));
 $dict = new EmotionalDictionary();
 $dict->add(new EmotionalLexeme("КРАСНЫЙ ФОНАРЬ"), new EmotionalVector(null,
-    $joy = 0.0,     $trust = 0.0,   $fear = 0.0,    $surprise = 0.0, 
-    $sadness = 0.0, $disgust = 0.0, $anger = 0.0,   $anticipation = 0.0
+    $joy = 0.0,     $trust = -1.0,   $fear = 0.0,    $surprise = 0.0, 
+    $sadness = 0.0, $disgust = 0.0, $anger = 0.0,   $anticipation = 1.0
 ));
 $dict->save();
 var_dump($dict);

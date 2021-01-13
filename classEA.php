@@ -5,13 +5,21 @@ class EAException extends Exception {
 class EmotionalDictionary {
     protected $eLexemes;
     function __construct() {
-        $this->eLexemes = array();
+        $myfile = fopen("dict.bin", "r") or die("Unable to open file!");
+        $str = fread($myfile, filesize("dict.bin"));
+        $this->eLexemes = unserialize($str);
+        fclose($myfile);
+        //$this->eLexemes = array();
     }
-    function add(EmotionalLexeme $eL, EmotionalVector $v) {
+    function add(EmotionalLexeme $eL, ?EmotionalVector $v=null) {
         $this->eLexemes[$eL->index()] = $eL;
+        if (!is_null($v)) $eL->emotion = new EmotionalVector($v);
+
     }
     function save() {
-        echo "EmotionalDictionary\n", serialize($this->eLexemes);
+        $myfile = fopen("dict.bin", "w") or die("Unable to open file!");
+        fwrite($myfile, serialize($this->eLexemes));
+        fclose($myfile);
     }
 }
 class EmotionalText {
@@ -33,7 +41,7 @@ class EmotionalText {
 class EmotionalLexeme {
     protected $src;
     protected $normal;
-    protected $emotion;
+    public $emotion;
     function __construct($_src) {
         $this->src = $_src;
         unset($emotion);
