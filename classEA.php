@@ -7,7 +7,7 @@ class EmotionalDictionary {
     function __construct() {
         $this->eLexemes = array();
     }
-    function add(EmotionalLexeme $eL) {
+    function add(EmotionalLexeme $eL, EmotionalVector $v) {
         $this->eLexemes[$eL->index()] = $eL;
     }
     function save() {
@@ -35,7 +35,7 @@ class EmotionalLexeme {
     protected $normal;
     protected $emotion;
     function __construct($_src) {
-        $src = $_src;
+        $this->src = $_src;
         unset($emotion);
         $this->normalize();
         $this->calcEmotionIndex();
@@ -74,11 +74,18 @@ class EmotionalVector {
         'anger' => 0.0,
         'anticipation' => 0.0
     );
-    function __construct(?EmotionalVector $v = null) {
+    function __construct(?EmotionalVector $v = null, ?float $joy=null, ?float $trust=null,
+        ?float $fear=null, ?float $surprise=null, ?float $sadness=null, 
+        ?float $disgust=null, ?float $anger=null, ?float $anticipation=null 
+    ) {
         if (!is_null($v)) {
             foreach ($this->coords as $key => $value) {
                 $this->coords[$key] = $v->$key;
             }
+            return;
+        }
+        foreach ($this->coords as $k=>$c){
+            $this->coords[$k] = $$k;
         }
     }
     function __debugInfo() {

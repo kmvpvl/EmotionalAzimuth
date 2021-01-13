@@ -230,6 +230,10 @@ echo '----------';
 //var_dump($morphy->getGramInfo('ОЧЕНЬ'));
 //var_dump($morphy->castFormByGramInfo('КРАСНЫХ','П',array('МН','ИМ'),TRUE));
 $dict = new EmotionalDictionary();
-$dict->add(new EmotionalLexeme("КРАСНЫЙ ФОНАРЬ"));
+$dict->add(new EmotionalLexeme("КРАСНЫЙ ФОНАРЬ"), new EmotionalVector(null,
+    $joy = 0.0,     $trust = 0.0,   $fear = 0.0,    $surprise = 0.0, 
+    $sadness = 0.0, $disgust = 0.0, $anger = 0.0,   $anticipation = 0.0
+));
 $dict->save();
+var_dump($dict);
 ?>
