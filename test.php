@@ -46,7 +46,7 @@ $t .= "Он попросил прихожан соблюдать все необ
 
 $t .= "Патриарх Кирилл назвал COVID сигналом от Господа и последним звонком.";
 
-$t .= "Патриарх Кирилл в декабре попросил клириков и прихожан сдать плазму крови для борьбы с пандемией коронавируса. Он отметил, что переливание плазмы крови — один из наиболее эффективных методов лечения COVID-19 для тяжелобольных пациентов. «Для этих людей данная процедура является иногда последней надеждой на исцеление. Помочь им в этом — наш долг христианской любви», — заявил патриарх.";
+//$t .= "Патриарх Кирилл в декабре попросил клириков и прихожан сдать плазму крови для борьбы с пандемией коронавируса. Он отметил, что переливание плазмы крови — один из наиболее эффективных методов лечения COVID-19 для тяжелобольных пациентов. «Для этих людей данная процедура является иногда последней надеждой на исцеление. Помочь им в этом — наш долг христианской любви», — заявил патриарх.";
 
 //$t .= "В Русской православной церкви (РПЦ) также посоветовали быстрее привиться от COVID-19. По словам митрополита Илариона, побочные эффекты прививки «минимальны» и не сравнимы «с теми мучениями, которые испытывают» заразившиеся.";
 //$t = "Мать - Евгения Яковлевна, прекрасная хозяйка, очень заботливая и любящая, жила исключительно жизнью детей и мужа. Но, при этом, страстно любила театр, хотя и посещала его нечасто. В ранней молодости она была отдана в таганрогский частный пансион благородных девиц, где обучалась танцам и хорошим манерам. Евгения Яковлевна оказывала огромное влияние на формирование характеров своих детей, воспитывая в них отзывчивость, уважение и сострадание к слабым, угнетённым, любовь к природе и миру. Антон Павлович Чехов впоследствии говорил, что \"талант в нас со стороны отца, а душа - со стороны матери\".";
@@ -69,12 +69,12 @@ foreach ($sentences as $sentence) {
 		) continue;
 		if (in_array('С', $part_of_speech)) {
 			if ($prev_noun) {
-				$dict->add(new EmotionalLexeme($prev_noun));
+				$dict->add(new EmotionalLexeme($prev_noun, $lang));
 				echo $prev_noun, "\n";   
 			}
 			$prev_noun = $morphy->castFormByGramInfo($word,'С',array('ЕД','ИМ'),TRUE)[0];
 			if ($prev_adj) {
-				$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun));
+				$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
 				echo $prev_adj, " ", $prev_noun, "\n";   
 				$prev_noun = "";
 				$prev_part = "";
@@ -85,13 +85,13 @@ foreach ($sentences as $sentence) {
 		if (in_array('П', $part_of_speech)) {
 			if ($prev_adj) {
 				if ($prev_noun) {
-					$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun));
+					$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
 					echo $prev_adj, " ", $prev_noun, "\n";   
 					$prev_noun = "";
 					$prev_part = "";
 					$prev_adj = "";
 				} else {
-					$dict->add(new EmotionalLexeme($prev_adj));
+					$dict->add(new EmotionalLexeme($prev_adj, $lang));
 					echo $prev_adj, "\n";   
 				}
 			}
@@ -101,19 +101,19 @@ foreach ($sentences as $sentence) {
 		if (in_array('КР_ПРИЛ', $part_of_speech)) {
 			if ($prev_adj) {
 				if ($prev_noun) {
-					$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun));
+					$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
 					echo $prev_adj, " ", $prev_noun, "\n";   
 					$prev_noun = "";
 					$prev_part = "";
 					$prev_adj = "";
 				} else {
-					$dict->add(new EmotionalLexeme($prev_adj));
+					$dict->add(new EmotionalLexeme($prev_adj, $lang));
 					echo $prev_adj, "\n";   
 				}
 			}
 			$prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'П',array('ЕД','ИМ'),TRUE)[0];
 			if ($prev_noun) {
-				$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun));
+				$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
 				echo $prev_adj, " ", $prev_noun, "\n";   
 				$prev_noun = "";
 				$prev_part = "";
@@ -124,19 +124,19 @@ foreach ($sentences as $sentence) {
 		if (in_array('ПРИЧАСТИЕ', $part_of_speech) ) {
 			if ($prev_adj) {
 				if ($prev_noun) {
-					$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun));
+					$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
 					echo $prev_adj, " ", $prev_noun, "\n";   
 					$prev_noun = "";
 					$prev_part = "";
 					$prev_adj = "";
 				} else {
-					$dict->add(new EmotionalLexeme($prev_adj));
+					$dict->add(new EmotionalLexeme($prev_adj, $lang));
 					echo $prev_adj, "\n";   
 				}
 			}
 			$prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'ПРИЧАСТИЕ',array('ЕД','ИМ'),TRUE)[0];
 			if ($prev_noun) {
-				$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun));
+				$dict->add(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
 				echo $prev_adj, " ", $prev_noun, "\n";   
 				$prev_noun = "";
 				$prev_part = "";
@@ -146,14 +146,14 @@ foreach ($sentences as $sentence) {
 		}
 		if (in_array('Н', $part_of_speech)) {
 			$prev_adv = $morphy->castFormByGramInfo($word,'Н',array(),TRUE)[0];
-			$dict->add(new EmotionalLexeme($prev_part?$prev_part.' ':"".$prev_adv));
+			$dict->add(new EmotionalLexeme($prev_part?$prev_part.' ':"".$prev_adv, $lang));
 			echo $prev_part?$prev_part.' ':"", $prev_adv, "\n";   
 			$prev_part = "";
 			continue;
 		}
 		if (in_array('Г', $part_of_speech)) {
 			$prev_verb = $morphy->castFormByGramInfo($word,'ИНФИНИТИВ',array(),TRUE)[0];
-			$dict->add(new EmotionalLexeme($prev_part?$prev_part.' ':"".$prev_verb));
+			$dict->add(new EmotionalLexeme($prev_part?$prev_part.' ':"".$prev_verb, $lang));
 			echo $prev_part?$prev_part.' ':"", $prev_verb, "\n";   
 			$prev_part = "";
 			continue;
@@ -175,11 +175,11 @@ echo "----------\n";
 #    $joy = -1.0,     $trust = -1.0,   $fear = 1.0,    $surprise = 0.0, 
 #    $sadness = 1.0, $disgust = 1.0,  $anger = 1.0,   $anticipation = 1.0
 #));
-$dict->getLexeme('ИСПЫТЫВАТЬ')->emotion = new EmotionalVector(null,
-    $joy = 0.0,     $trust = -1.0,   $fear = 1.0,    $surprise = 1.0, 
-    $sadness = 1.0, $disgust = 0.0,  $anger = 0.0,   $anticipation = 1.0
-);
-var_dump($dict);
+#$dict->getLexeme('ИСПЫТЫВАТЬ')->emotion = new EmotionalVector(null,
+#    $joy = 0.0,     $trust = -1.0,   $fear = 1.0,    $surprise = 1.0, 
+#    $sadness = 1.0, $disgust = 0.0,  $anger = 0.0,   $anticipation = 1.0
+#);
+#var_dump($dict);
 /*foreach ($dict->eLexemes as $key=>$val) {
 	echo bin2hex($key), "=>", $val->normal, "\n\r";
 }*/

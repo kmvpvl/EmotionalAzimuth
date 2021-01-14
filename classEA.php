@@ -3,37 +3,55 @@ class EAException extends Exception {
 
 }
 class EmotionalDictionary {
-    protected $eLexemes;
+    protected $dblink;
     function __construct() {
-        $myfile = fopen("dict.bin", "r") or die("Unable to open file!");
-        $str = fread($myfile, filesize("dict.bin"));
-        $this->eLexemes = unserialize($str);
-        fclose($myfile);
-        //$this->eLexemes = array();
+		$settings = parse_ini_file("settings.ini", true);
+        $host = "";
+        $database = "";
+        $user = "";
+        $password = "";
+		
+		if (array_key_exists("database", $settings)) {
+			if (array_key_exists("host", $settings["database"])) $host = $settings["database"]["host"];
+			if (array_key_exists("database", $settings["database"])) $database = $settings["database"]["database"];
+			if (array_key_exists("user", $settings["database"])) $user = $settings["database"]["user"];
+			if (array_key_exists("password", $settings["database"])) $password = $settings["database"]["password"];
+        } else throw new EAException ("database settings are absent"); 
+        var_dump($settings);
+		
+		$this->dblink = new mysqli($host, $user, $password, $database);
+		if ($this->dblink->connect_errno) throw new EAException("Unable connect to database (`" . $host . "` - `" . $database . "`): " . $this->dblink->connect_errno . " - " . $this->dblink->connect_error);
+		$this->dblink->set_charset("utf-8");
+		$this->dblink->query("set names utf8");
+		$this->dblink->query("SET @@session.time_zone='+00:00';");
     }
     function __destruct() {
-        $this->save();
-//        echo "destruct";
+		$this->dblink->close();
     }
     function add(EmotionalLexeme $eL, ?EmotionalVector $v=null) {
-        //var_dump($eL->index());
-        if (!is_null($v)) $eL->emotion = new EmotionalVector($v);
-        if (!array_key_exists($eL->index(), $this->eLexemes) || is_null($this->eLexemes[$eL->index()]->emotion)) {
-            $this->eLexemes[$eL->index()] = $eL;
-        } else {
-            var_dump($this->eLexemes[$eL->index()]);
-            throw new EAException('Lexeme already exists with not null EmotionalVector. Use update method to update emotion');
+	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "')");
+	    if ($this->dblink->errno) throw new EAException("Could not create lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+#        if (!is_null($v)) $eL->emotion = new EmotionalVector($v);
+#        if (!array_key_exists($eL->index, $this->eLexemes) || is_null($this->eLexemes[$eL->index]->emotion)) {
+#            $this->eLexemes[$eL->index] = $eL;
+#        } else {
+#            var_dump($this->eLexemes[$eL->index]);
+#            throw new EAException('Lexeme already exists with not null EmotionalVector. Use update method to update emotion');
+#        }
+    }
+    function getLexeme($lexeme, $lang) {
+        $el = new EmotionalLexeme($lexeme, $lang);
+        if (!array_key_exists($el->index, $this->eLexemes)) return false;
+        return $this->eLexemes[$el->index];
+    }
+    function __get($name) {
+        switch($name) {
+            case 'lexemes':
+                return $this->eLexemes;
+            break;
+            default:
+                throw new Exception("Unknown property: '".$name."'");
         }
-    }
-    function save() {
-        $myfile = fopen("dict.bin", "w") or die("Unable to open file!");
-        fwrite($myfile, serialize($this->eLexemes));
-        fclose($myfile);
-    }
-    function getLexeme($lexeme) {
-        $el = new EmotionalLexeme($lexeme);
-        if (!array_key_exists($el->index(), $this->eLexemes)) return false;
-        return $this->eLexemes[$el->index()];
     }
 }
 class EmotionalText {
@@ -55,10 +73,12 @@ class EmotionalText {
 class EmotionalLexeme {
     protected $src;
     protected $normal;
+    protected $lang;
     public $emotion;
     public $ignore = false;
-    function __construct($_src) {
+    function __construct($_src, $lang) {
         $this->src = $_src;
+        $this->lang = $lang;
         unset($emotion);
         $this->normalize();
         $this->calcEmotionIndex();
@@ -70,15 +90,19 @@ class EmotionalLexeme {
     protected function calcEmotionIndex() {
         
     }
-    public function index(){
-        return md5($this->normal, true);
-    }
     function __get($name) {
         switch ($name) {
             case 'normal':
                 return $this->normal;
                 break;
             
+            case 'index':
+                return md5($this->normal, true);
+                break;
+
+            case 'lang':
+                return $this->lang;
+                break;
             default:
                 # code...
                 break;
