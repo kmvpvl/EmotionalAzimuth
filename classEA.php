@@ -11,15 +11,29 @@ class EmotionalDictionary {
         fclose($myfile);
         //$this->eLexemes = array();
     }
+    function __destruct() {
+        $this->save();
+//        echo "destruct";
+    }
     function add(EmotionalLexeme $eL, ?EmotionalVector $v=null) {
-        $this->eLexemes[$eL->index()] = $eL;
+        //var_dump($eL->index());
         if (!is_null($v)) $eL->emotion = new EmotionalVector($v);
-
+        if (!array_key_exists($eL->index(), $this->eLexemes) || is_null($this->eLexemes[$eL->index()]->emotion)) {
+            $this->eLexemes[$eL->index()] = $eL;
+        } else {
+            var_dump($this->eLexemes[$eL->index()]);
+            throw new EAException('Lexeme already exists with not null EmotionalVector. Use update method to update emotion');
+        }
     }
     function save() {
         $myfile = fopen("dict.bin", "w") or die("Unable to open file!");
         fwrite($myfile, serialize($this->eLexemes));
         fclose($myfile);
+    }
+    function getLexeme($lexeme) {
+        $el = new EmotionalLexeme($lexeme);
+        if (!array_key_exists($el->index(), $this->eLexemes)) return false;
+        return $this->eLexemes[$el->index()];
     }
 }
 class EmotionalText {
@@ -42,6 +56,7 @@ class EmotionalLexeme {
     protected $src;
     protected $normal;
     public $emotion;
+    public $ignore = false;
     function __construct($_src) {
         $this->src = $_src;
         unset($emotion);
@@ -49,7 +64,7 @@ class EmotionalLexeme {
         $this->calcEmotionIndex();
     }
     protected function normalize() {
-
+        $this->normal = $this->src;
     }
 
     protected function calcEmotionIndex() {
@@ -57,6 +72,17 @@ class EmotionalLexeme {
     }
     public function index(){
         return md5($this->normal, true);
+    }
+    function __get($name) {
+        switch ($name) {
+            case 'normal':
+                return $this->normal;
+                break;
+            
+            default:
+                # code...
+                break;
+        }
     }
 }
 class EmotionalColors {
