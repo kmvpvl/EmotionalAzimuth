@@ -17,7 +17,7 @@ class EmotionalDictionary {
 			if (array_key_exists("user", $settings["database"])) $user = $settings["database"]["user"];
 			if (array_key_exists("password", $settings["database"])) $password = $settings["database"]["password"];
         } else throw new EAException ("database settings are absent"); 
-        var_dump($settings);
+        //var_dump($settings);
 		
 		$this->dblink = new mysqli($host, $user, $password, $database);
 		if ($this->dblink->connect_errno) throw new EAException("Unable connect to database (`" . $host . "` - `" . $database . "`): " . $this->dblink->connect_errno . " - " . $this->dblink->connect_error);
@@ -27,6 +27,17 @@ class EmotionalDictionary {
     }
     function __destruct() {
 		$this->dblink->close();
+    }
+    function getUnassignedLexemesTopN(int $N = 10) {
+	    $x = $this->dblink->query("call getUnassignedDictionaryTopN(" . $N . ")");
+        if ($this->dblink->errno) throw new EAException("Could not get lexemes from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+        if (!$x) throw new EAException("Could not get lexemes from dictionary: lexemes are absent");
+        $z = array();
+        while ($y = $x->fetch_assoc()) {
+            $z[] = new EmotionalLexeme(null, null, $y);
+        };
+        $this->dblink->next_result();
+        return $z;
     }
     function add(EmotionalLexeme $eL, ?EmotionalVector $v=null) {
 	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "')");
@@ -39,10 +50,20 @@ class EmotionalDictionary {
 #            throw new EAException('Lexeme already exists with not null EmotionalVector. Use update method to update emotion');
 #        }
     }
-    function getLexeme($lexeme, $lang) {
+    function getLexeme($lexeme, $lang): ?EmotionalLexeme {
         $el = new EmotionalLexeme($lexeme, $lang);
-        if (!array_key_exists($el->index, $this->eLexemes)) return false;
-        return $this->eLexemes[$el->index];
+	    $x = $this->dblink->query("call getLexemeFromDictionary('" . $el->normal . "', '" . $el->lang . "')");
+        if ($this->dblink->errno) throw new EAException("Could not get lexeme from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+        if (!$x) throw new EAException("Could not get lexeme from dictionary: lexeme is absent");
+        $y = $x->fetch_assoc();
+        if (!$y) throw new EAException("Could not get lexeme from dictionary: lexeme is absent");
+        //var_dump($y);
+        $el->ignore = $y["stopword"];
+        $ev = new EmotionalVector();
+        $ev->fillByArray($y);
+        if (!is_null($ev->length())) $el->emotion = $ev;
+        $this->dblink->next_result();
+        return $el;
     }
     function __get($name) {
         switch($name) {
@@ -57,7 +78,7 @@ class EmotionalDictionary {
 class EmotionalText {
     protected $text;
     protected $eLexemes;
-    function __construct($text) {
+    function __construct(string $text) {
         $this->text = $text;
         $this->eLexemes = array();
     }
@@ -70,16 +91,29 @@ class EmotionalText {
     }
 
 }
-class EmotionalLexeme {
+class EmotionalLexeme implements JsonSerializable {
     protected $src;
     protected $normal;
     protected $lang;
     public $emotion;
-    public $ignore = false;
-    function __construct($_src, $lang) {
-        $this->src = $_src;
-        $this->lang = $lang;
-        unset($emotion);
+    public $ignore;
+    function __construct(?string $_src=null, ?string $lang=null, $arr=null) {
+        if (!is_null($arr) && is_array($arr)) {
+            $this->src = $arr["lexeme"];
+            $this->lang = $arr["lang"];
+            $this->ignore = $arr["stopword"];
+            $ev = new EmotionalVector();
+            $ev->fillByArray($arr);
+            if (is_null($ev->length())) {
+                $this->emotion = null;
+            } else {
+                $this->emotion = $ev;
+            }
+        } else {
+            $this->src = $_src;
+            $this->lang = $lang;
+            $this->emotion = null;
+        }
         $this->normalize();
         $this->calcEmotionIndex();
     }
@@ -90,6 +124,14 @@ class EmotionalLexeme {
     protected function calcEmotionIndex() {
         
     }
+    public function jsonSerialize() {
+        return [
+            'lexeme' => $this->normal,
+            'ignore' => $this->ignore,
+            'emotion' => $this->emotion
+        ];
+    }
+    
     function __get($name) {
         switch ($name) {
             case 'normal':
@@ -108,6 +150,7 @@ class EmotionalLexeme {
                 break;
         }
     }
+
 }
 class EmotionalColors {
     protected $basecolors = array(
@@ -121,7 +164,7 @@ class EmotionalColors {
         'anticipation' => 0xe87200
     );
 }
-class EmotionalVector {
+class EmotionalVector  implements JsonSerializable {
     protected $coords = array(
         'joy' => 0.0,
         'trust' => 0.0,
@@ -149,8 +192,11 @@ class EmotionalVector {
     function __debugInfo() {
         return array(
             'coords' => $this->coords,
-            'len' => $this->length()
+            'length' => $this->length()
         );
+    }
+    public function jsonSerialize() {
+        return $this->coords;
     }
     function __get($name) {
         if (array_key_exists($name, $this->coords)) {
@@ -179,16 +225,23 @@ class EmotionalVector {
     }
     public function length() {
         $ret = 0.0;
+        $all_is_null = true;
         foreach ($this->coords as $key => $value) {
+            $all_is_null = $all_is_null || !is_null($value);
             $ret += pow($this->$key, 2);
         }
-        return sqrt($ret);
+        return ($all_is_null? null : sqrt($ret));
     }
 
     public function normalize() {
         $l = $this->length();
         foreach ($this->coords as $key => $value) {
             $this->$key /= $l;
+        }
+    }
+    public function fillByArray($arr) {
+        foreach ($this->coords as $k=>$c){
+            $this->coords[$k] = $arr[$k];
         }
     }
 }

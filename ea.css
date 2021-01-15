@@ -1,0 +1,14 @@
+html {
+    font-size: 0.8rem;
+  }
+  body {
+    margin:0;
+    padding:0px;
+    overflow:hidden;
+  }
+  * {
+      box-sizing: border-box;
+  }
+lexeme {
+    display: block;
+}

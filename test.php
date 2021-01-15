@@ -175,10 +175,10 @@ echo "----------\n";
 #    $joy = -1.0,     $trust = -1.0,   $fear = 1.0,    $surprise = 0.0, 
 #    $sadness = 1.0, $disgust = 1.0,  $anger = 1.0,   $anticipation = 1.0
 #));
-#$dict->getLexeme('ИСПЫТЫВАТЬ')->emotion = new EmotionalVector(null,
-#    $joy = 0.0,     $trust = -1.0,   $fear = 1.0,    $surprise = 1.0, 
-#    $sadness = 1.0, $disgust = 0.0,  $anger = 0.0,   $anticipation = 1.0
-#);
+$el = $dict->getLexeme('НЕОСТОРОЖНОСТЬ', $lang);
+//var_dump($el);
+$u = $dict->getUnassignedLexemesTopN();
+echo json_encode($u);
 #var_dump($dict);
 /*foreach ($dict->eLexemes as $key=>$val) {
 	echo bin2hex($key), "=>", $val->normal, "\n\r";

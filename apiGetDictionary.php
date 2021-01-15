@@ -5,8 +5,9 @@ echo '{"result":';
 $res = '"OK"';
 try {
     $res .= ', "data" : ';
-    //var_dump($dict->lexemes);
-    $res .= json_encode($dict->lexemes, JSON_THROW_ON_ERROR);
+    $u = $dict->getUnassignedLexemesTopN();
+    #var_dump($u);
+    $res .= json_encode($u);
 } catch (Exception $e) {
     $res = '"FAIL", "description" : "' . $e->getMessage() . '"';  
 }
