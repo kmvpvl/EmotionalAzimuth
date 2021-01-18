@@ -2,6 +2,7 @@
 
 ?>
 <script>
+var lexeme_emotion;
 function drawLexeme(lex) {
     s = "<lexeme lexeme_id='"+lex.id+"'>";
     s += "<flower>"+drawFlower(lex.emotion)+"</flower>";
@@ -66,9 +67,18 @@ function drawLexemes() {
 						//alert(event.currentTarget.attributes['lexeme_id'].nodeValue);
 						lexeme_normal = $('lexeme[lexeme_id='+event.currentTarget.attributes['lexeme_id'].nodeValue+'] > normal').text();
 						lexeme_lang = $('lexeme[lexeme_id='+event.currentTarget.attributes['lexeme_id'].nodeValue+'] > lang').text();
-						//debugger;
+						lexeme_emotion = JSON.parse($('lexeme[lexeme_id='+event.currentTarget.attributes['lexeme_id'].nodeValue+'] > emotion').text());
 						$('#dlgModalEditLexemeTitle').text(lexeme_normal);
-						$('#dlgModalEditLexemeFlower').html(drawFlower(emotion, 200));
+						$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme_emotion, 200));
+						$('[modal_emotion]').val(0);
+						emotions.forEach(function (item, index) {
+                        	$("[modal_emotion='"+item+"']").val(lexeme_emotion[item]?lexeme_emotion[item]:0);
+						});
+						$('[modal_emotion]').change (function(event) {
+							axis = event.currentTarget.attributes['modal_emotion'].nodeValue;
+							lexeme_emotion[axis] = $("[modal_emotion='"+axis+"']").val();
+							$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme_emotion, 200));
+						});
 						$("#dlgModalEditLexeme").modal('show');
 					});
                 }
@@ -97,11 +107,11 @@ $(document).ready (function () {
 	drawLexemes();
 })
 
-function drawFlower (emotion, w=100) {
+function drawFlower (emotion, w=75) {
 	R = w / 2;
 	r = R * 0.6;
 	N = 8;
-	s = '<svg class="flower" viewbox="-'+R+' -'+R+' '+w+' '+w+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="width:50px;height:50px;">';
+	s = '<svg class="flower" viewbox="-'+R+' -'+R+' '+w+' '+w+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="width:'+w+'px;height:'+w+'px;">';
 	if (emotion) {
 		for (i=0; i<N; i++) {
 			axis = emotion[emotions[i]];
@@ -124,14 +134,15 @@ function drawFlower (emotion, w=100) {
 	return s;
 }
 function drawEmotion (emotion) {
-	s = '';
+	s = '{';
 	if (emotion) {
 		for (i=0; i<N; i++) {
+			if (i>0) s+=',';
 			axis = emotion[emotions[i]];
-			if (axis) s += emotions[i] + ": "+axis+";";
+			s += '"' + emotions[i] + '": '+axis;
 		}
 	}
-	s += '';
+	s += '}';
 	return s;
 }
 </script>
@@ -148,6 +159,36 @@ function drawEmotion (emotion) {
 		  <flower id="dlgModalEditLexemeFlower">
 
 		  </flower>
+		  <span class="container-fluid">
+			<div class="row">
+				<div class="col-sm-3 joy">joy
+				<input class="joy" modal_emotion="joy" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+				<div class="col-sm-3 trust">trust
+				<input class="trust" modal_emotion="trust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+				<div class="col-sm-3 fear">fear
+				<input class="fear" modal_emotion="fear" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+				<div class="col-sm-3 surprise">surprise
+				<input class="surprise" modal_emotion="surprise" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-3 sadness">sadness
+				<input class="sadness" modal_emotion="sadness" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+				<div class="col-sm-3 disgust">disgust
+				<input class="disgust" modal_emotion="disgust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+				<div class="col-sm-3 anger">anger
+				<input class="anger" modal_emotion="anger" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+				<div class="col-sm-3 anticipation">anticipation
+				<input class="anticipation" modal_emotion="anticipation" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+				</div>
+			</div>
+		</span>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
