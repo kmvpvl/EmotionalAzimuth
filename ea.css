@@ -1,14 +1,53 @@
+* {
+  box-sizing: border-box;
+}
 html {
-    font-size: 0.8rem;
-  }
-  body {
-    margin:0;
-    padding:0px;
-    overflow:hidden;
-  }
-  * {
-      box-sizing: border-box;
-  }
+  font-size: 1rem;
+}
+body {
+  margin:0;
+  padding:0px;
+  overflow:hidden;
+}
+instance {
+  display: block;
+  position: relative;
+  border: solid 2px green;
+  padding: 5px;
+  margin: 0px;
+  padding-left: 2;
+  padding-right: 2;
+  width: 100%;
+  overflow-y: auto;
+}
 lexeme {
-    display: block;
+  display: block;
+  cursor: pointer;
+}
+lexeme.hover {
+  font-weight: bold;
+}
+.joy{
+  fill:#edc500;
+} 
+.trust{
+  fill:#7abd0d;
+}
+.fear{
+  fill:#007b33;
+}
+.surprise{
+  fill:#0080ab;
+}
+.sadness{
+  fill:#1f6dad;
+}
+.disgust{
+  fill:#7b4ea3;
+}
+.anger{
+  fill:#dc0047;
+}
+.anticipation{
+  fill:#e87200;
 }

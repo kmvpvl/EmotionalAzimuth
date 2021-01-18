@@ -6,7 +6,6 @@ $res = '"OK"';
 try {
     $res .= ', "data" : ';
     $u = $dict->getUnassignedLexemesTopN();
-    #var_dump($u);
     $res .= json_encode($u);
 } catch (Exception $e) {
     $res = '"FAIL", "description" : "' . $e->getMessage() . '"';  

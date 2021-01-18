@@ -34,6 +34,7 @@ class EmotionalDictionary {
         if (!$x) throw new EAException("Could not get lexemes from dictionary: lexemes are absent");
         $z = array();
         while ($y = $x->fetch_assoc()) {
+            //var_dump($y);
             $z[] = new EmotionalLexeme(null, null, $y);
         };
         $this->dblink->next_result();
@@ -95,15 +96,18 @@ class EmotionalLexeme implements JsonSerializable {
     protected $src;
     protected $normal;
     protected $lang;
+    protected $lexeme_id;
     public $emotion;
     public $ignore;
     function __construct(?string $_src=null, ?string $lang=null, $arr=null) {
         if (!is_null($arr) && is_array($arr)) {
+            $this->lexeme_id = $arr["id"];
             $this->src = $arr["lexeme"];
             $this->lang = $arr["lang"];
             $this->ignore = $arr["stopword"];
             $ev = new EmotionalVector();
             $ev->fillByArray($arr);
+            //var_dump($ev);
             if (is_null($ev->length())) {
                 $this->emotion = null;
             } else {
@@ -126,7 +130,9 @@ class EmotionalLexeme implements JsonSerializable {
     }
     public function jsonSerialize() {
         return [
+            'id' => $this->lexeme_id,
             'lexeme' => $this->normal,
+            'lang' => $this->lang,
             'ignore' => $this->ignore,
             'emotion' => $this->emotion
         ];
@@ -227,7 +233,7 @@ class EmotionalVector  implements JsonSerializable {
         $ret = 0.0;
         $all_is_null = true;
         foreach ($this->coords as $key => $value) {
-            $all_is_null = $all_is_null || !is_null($value);
+            $all_is_null = $all_is_null && is_null($value);
             $ret += pow($this->$key, 2);
         }
         return ($all_is_null? null : sqrt($ret));
@@ -240,6 +246,7 @@ class EmotionalVector  implements JsonSerializable {
         }
     }
     public function fillByArray($arr) {
+        //var_dump($arr);
         foreach ($this->coords as $k=>$c){
             $this->coords[$k] = $arr[$k];
         }
