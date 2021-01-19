@@ -40,7 +40,7 @@ class EmotionalDictionary {
         $this->dblink->next_result();
         return $z;
     }
-    function add(EmotionalLexeme $eL, ?EmotionalVector $v=null) {
+    function add(EmotionalLexeme $eL) {
 	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "')");
 	    if ($this->dblink->errno) throw new EAException("Could not create lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
 #        if (!is_null($v)) $eL->emotion = new EmotionalVector($v);
@@ -248,7 +248,7 @@ class EmotionalVector  implements JsonSerializable {
     public function fillByArray($arr) {
         //var_dump($arr);
         foreach ($this->coords as $k=>$c){
-            $this->coords[$k] = $arr[$k];
+            $this->coords[$k] = floatval($arr[$k]);
         }
     }
 }

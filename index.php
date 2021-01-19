@@ -25,6 +25,24 @@ $(window).resize( function (){
 });
 function calcResize() {
     $('instance').css('height', $(window).height() - $('instance').offset().top + "px");
+    $("#errorLoadingMessage").offset({top: -$("#errorLoadingMessage").outerHeight(), left: 0});
+}
+function showLoading() {
+	$("#errorLoadingMessage").hide();
+	$("#loadingSpinner").show();
+}
+function hideLoading() {
+	$("#loadingSpinner").hide();
+} 
+function showLoadingError(_text) {
+    $('body').append('<div id="errorLoadingMessage" class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><span></span></div>');
+	hideLoading();
+	$("#errorLoadingMessage > span").html(_text);
+    calcResize();
+	$("#errorLoadingMessage").show();
+}
+function clearInstance() {
+	$("instance").html = "";
 }
 </script>
 <instance>
@@ -32,6 +50,7 @@ function calcResize() {
 include 'lexemes.php';
 ?>
 </instance>
+<div id="loadingSpinner" class="spinner-border"></div>
 
 </body>
 </html>

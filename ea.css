@@ -65,3 +65,12 @@ lexeme > lang {
 lexeme > emotion {
   display: none;
 }
+#loadingSpinner {
+  position: relative;
+  display: none;
+}
+#errorLoadingMessage {
+  display: none;
+  position: relative;
+  /*z-index: 0;*/ 
+}

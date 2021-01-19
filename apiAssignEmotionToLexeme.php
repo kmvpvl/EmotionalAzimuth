@@ -1,8 +1,12 @@
 <?php
 require_once('classEA.php');
-if (!isset($_POST["lexeme"])) http_response_code(400);
+if (!isset($_POST["normal"]) || !isset($_POST["lang"]) || !isset($_POST["emotion"])) http_response_code(400);
+$arr = [];
+$arr += $_POST + $_POST["emotion"];
+unset($arr["emotion"]);
+//var_dump($arr);
+$el = new EmotionalLexeme(null, null, $arr);
+//var_dump($el);
 $dict = new EmotionalDictionary();
-$lexeme = $_POST["lexeme"];
-if (!array_key_exists($lexemeIndex, $dict))
+$dict->add($el);
 ?>
-<>

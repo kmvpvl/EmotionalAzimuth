@@ -2,7 +2,7 @@
 
 ?>
 <script>
-var lexeme_emotion;
+var lexeme = new Object();
 function drawLexeme(lex) {
     s = "<lexeme lexeme_id='"+lex.id+"'>";
     s += "<flower>"+drawFlower(lex.emotion)+"</flower>";
@@ -13,24 +13,17 @@ function drawLexeme(lex) {
     s += "</lexeme>";
     return s;
 }
-function getLexeme(lex, lang) {
-	//showLoading();
-	var p = $.post("apiGetLexeme.php",
-	{
-		lexeme: lex,
-		lang: lang
-	},
+function saveLexeme(lex) {
+	showLoading();
+	var p = $.post("apiAssignEmotionToLexeme.php", lex,
 	function(data, status){
-		//hideLoading();
+		hideLoading();
 		switch (status) {
 			case "success":
                 debugger;
-			    ls = JSON.parse(data);
-                if ('OK' == ls.result) {
-                }
 				break;
 			default:
-				//clearInstance();
+				clearInstance();
 				//showLoginForm();
 		}
 	});
@@ -38,23 +31,22 @@ function getLexeme(lex, lang) {
 		hideLoading();
 		switch (data.status) {
 			case 400:
-				//clearInstance();
+				clearInstance();
 				//showLoginForm();
-				//showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
 				break;
-			default:				
-				//showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
+			default:;			
 		}
+		showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
 	})
 }
 function drawLexemes() {
-	//showLoading();
+	showLoading();
 	var p = $.post("apiGetDictionary.php",
 	{
 		count: 10
 	},
 	function(data, status){
-		//hideLoading();
+		hideLoading();
 		switch (status) {
 			case "success":
                 //debugger;
@@ -65,26 +57,28 @@ function drawLexemes() {
                     });
 					$('lexeme').on ('click', function(event) {
 						//alert(event.currentTarget.attributes['lexeme_id'].nodeValue);
-						lexeme_normal = $('lexeme[lexeme_id='+event.currentTarget.attributes['lexeme_id'].nodeValue+'] > normal').text();
-						lexeme_lang = $('lexeme[lexeme_id='+event.currentTarget.attributes['lexeme_id'].nodeValue+'] > lang').text();
-						lexeme_emotion = JSON.parse($('lexeme[lexeme_id='+event.currentTarget.attributes['lexeme_id'].nodeValue+'] > emotion').text());
-						$('#dlgModalEditLexemeTitle').text(lexeme_normal);
-						$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme_emotion, 200));
+						lexeme.id = event.currentTarget.attributes['lexeme_id'].nodeValue;
+						lexeme.lexeme = $('lexeme[lexeme_id='+lexeme.id+'] > normal').text();
+						lexeme.lang = $('lexeme[lexeme_id='+lexeme.id+'] > lang').text();
+						lexeme.stopword = $('lexeme[lexeme_id='+lexeme.id+'] > ignore').text();
+						lexeme.emotion = JSON.parse($('lexeme[lexeme_id='+lexeme.id+'] > emotion').text());
+						$('#dlgModalEditLexemeTitle').text(lexeme.lexeme);
+						$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
 						$('[modal_emotion]').val(0);
 						emotions.forEach(function (item, index) {
-                        	$("[modal_emotion='"+item+"']").val(lexeme_emotion[item]?lexeme_emotion[item]:0);
+                        	$("[modal_emotion='"+item+"']").val(lexeme.emotion[item]?lexeme.emotion[item]:0);
 						});
 						$('[modal_emotion]').change (function(event) {
 							axis = event.currentTarget.attributes['modal_emotion'].nodeValue;
-							lexeme_emotion[axis] = $("[modal_emotion='"+axis+"']").val();
-							$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme_emotion, 200));
+							lexeme.emotion[axis] = $("[modal_emotion='"+axis+"']").val();
+							$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
 						});
 						$("#dlgModalEditLexeme").modal('show');
 					});
                 }
 				break;
 			default:
-				//clearInstance();
+				clearInstance();
 				//showLoginForm();
 		}
 	});
@@ -92,12 +86,12 @@ function drawLexemes() {
 		hideLoading();
 		switch (data.status) {
 			case 400:
-				//clearInstance();
+				clearInstance();
 				//showLoginForm();
-				//showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
+				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
 				break;
 			default:				
-				//showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
+				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
 		}
 	})
     
@@ -105,6 +99,10 @@ function drawLexemes() {
 
 $(document).ready (function () {
 	drawLexemes();
+	$('[dlg-button="btn-dlgModal-ok"]').on('click', function () {
+		saveLexeme(lexeme);
+		$("#dlgModalEditLexeme").modal('hide');
+	});
 })
 
 function drawFlower (emotion, w=75) {
@@ -145,6 +143,7 @@ function drawEmotion (emotion) {
 	s += '}';
 	return s;
 }
+
 </script>
 <div class="modal fade" id="dlgModalEditLexeme" tabindex="-1" role="dialog" aria-labelledby="dlgModalLongTitle" aria-hidden="true">
   <div class="modal-dialog" role="document">
