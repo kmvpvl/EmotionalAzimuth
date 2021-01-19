@@ -16,6 +16,17 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"></head>
 <body>
+<script>
+$(window).ready(function () {
+    calcResize();
+});
+$(window).resize( function (){
+    calcResize();
+});
+function calcResize() {
+    $('instance').css('height', $(window).height() - $('instance').offset().top + "px");
+}
+</script>
 <instance>
 <?php
 include 'lexemes.php';
