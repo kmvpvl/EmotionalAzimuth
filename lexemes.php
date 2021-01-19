@@ -20,7 +20,7 @@ function saveLexeme(lex) {
 		hideLoading();
 		switch (status) {
 			case "success":
-                debugger;
+                //debugger;
 				break;
 			default:
 				clearInstance();

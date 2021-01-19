@@ -1,6 +1,7 @@
 <?php
 require_once('classEA.php');
-if (!isset($_POST["normal"]) || !isset($_POST["lang"]) || !isset($_POST["emotion"])) http_response_code(400);
+if (!isset($_POST["lexeme"]) || !isset($_POST["lang"]) || !isset($_POST["emotion"])) http_response_code(400);
+//var_dump($_POST);
 $arr = [];
 $arr += $_POST + $_POST["emotion"];
 unset($arr["emotion"]);
