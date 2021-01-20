@@ -41,7 +41,8 @@ class EmotionalDictionary {
         return $z;
     }
     function add(EmotionalLexeme $eL) {
-	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "')");
+        //echo "select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', null, " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ")";
+	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', null, " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ")");
 	    if ($this->dblink->errno) throw new EAException("Could not create lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
 #        if (!is_null($v)) $eL->emotion = new EmotionalVector($v);
 #        if (!array_key_exists($eL->index, $this->eLexemes) || is_null($this->eLexemes[$eL->index]->emotion)) {

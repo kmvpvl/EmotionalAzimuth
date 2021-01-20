@@ -1,7 +1,8 @@
-<?php
-
-?>
+<lexemes_list></lexemes_list>
 <script>
+function clearLexemesList(){
+	$('lexemes_list').html("");
+}
 var lexeme = new Object();
 function drawLexeme(lex) {
     s = "<lexeme lexeme_id='"+lex.id+"'>";
@@ -23,7 +24,7 @@ function saveLexeme(lex) {
                 //debugger;
 				break;
 			default:
-				clearInstance();
+				clearLexemesList();
 				//showLoginForm();
 		}
 	});
@@ -31,7 +32,6 @@ function saveLexeme(lex) {
 		hideLoading();
 		switch (data.status) {
 			case 400:
-				clearInstance();
 				//showLoginForm();
 				break;
 			default:;			
@@ -52,8 +52,9 @@ function drawLexemes() {
                 //debugger;
 			    ls = JSON.parse(data);
                 if ('OK' == ls.result) {
+					clearLexemesList();
                     ls.data.forEach(function (item, index) {
-                        $("instance").append(drawLexeme(item));
+                        $("lexemes_list").append(drawLexeme(item));
                     });
 					$('lexeme').on ('click', function(event) {
 						//alert(event.currentTarget.attributes['lexeme_id'].nodeValue);
@@ -78,7 +79,7 @@ function drawLexemes() {
                 }
 				break;
 			default:
-				clearInstance();
+				clearLexemesList();
 				//showLoginForm();
 		}
 	});
@@ -86,7 +87,7 @@ function drawLexemes() {
 		hideLoading();
 		switch (data.status) {
 			case 400:
-				clearInstance();
+				clearLexemesList();
 				//showLoginForm();
 				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
 				break;
@@ -102,6 +103,7 @@ $(document).ready (function () {
 	$('[dlg-button="btn-dlgModal-ok"]').on('click', function () {
 		saveLexeme(lexeme);
 		$("#dlgModalEditLexeme").modal('hide');
+		drawLexemes();
 	});
 })
 

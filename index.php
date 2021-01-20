@@ -42,7 +42,7 @@ function showLoadingError(_text) {
 	$("#errorLoadingMessage").show();
 }
 function clearInstance() {
-	$("instance").html = "";
+	$("instance").html("");
 }
 </script>
 <instance>
