@@ -2,10 +2,10 @@
 -- version 5.0.4
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Jan 14, 2021 at 07:22 PM
--- Server version: 10.5.8-MariaDB
--- PHP Version: 7.4.13
+-- Host: 127.0.0.1
+-- Generation Time: Jan 20, 2021 at 09:49 AM
+-- Server version: 10.4.17-MariaDB
+-- PHP Version: 8.0.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -39,14 +39,40 @@ select * from `dictionary` where `dictionary`.`stopword` is null LIMIT N$$
 -- Functions
 --
 DROP FUNCTION IF EXISTS `addLexemeToDictionary`$$
-CREATE DEFINER=`root`@`localhost` FUNCTION `addLexemeToDictionary` (`_lexeme` VARCHAR(250), `_lang` VARCHAR(5)) RETURNS BIGINT(20) UNSIGNED NO SQL
+CREATE DEFINER=`root`@`localhost` FUNCTION `addLexemeToDictionary` (`_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_ignore` BOOLEAN, `_emotion` VARCHAR(250)) RETURNS BIGINT(20) UNSIGNED NO SQL
 BEGIN
 set @id = (select `dictionary`.`id` from `dictionary` where `dictionary`.`lang` like `_lang` and `dictionary`.`lexeme` like `_lexeme`);
-IF @id > 0 THEN
-	return @id;
-END IF;
+if `_emotion` IS NOT NULL THEN
+select json_extract(`_emotion`, '$.joy') INTO @joy;
+select json_extract(`_emotion`, '$.trust') INTO @trust;
+select json_extract(`_emotion`, '$.fear') INTO @fear;
+select json_extract(`_emotion`, '$.surprise') INTO @surprise;
+select json_extract(`_emotion`, '$.sadness') INTO @sadness;
+select json_extract(`_emotion`, '$.disgust') INTO @disgust;
+select json_extract(`_emotion`, '$.anger') INTO @anger;
+select json_extract(`_emotion`, '$.anticipation') INTO @anticipation;
+end if;
+if @id is null THEN
 insert into `dictionary` (`lang`, `lexeme`) VALUES (`_lang`, `_lexeme`); 
-return (SELECT LAST_INSERT_ID());
+set @id = LAST_INSERT_ID();
+end if;
+if `_ignore` is not null THEN
+update `dictionary` set `dictionary`.`stopword`=`_ignore` where `dictionary`.`id`=@id;
+ELSE
+update `dictionary` set `dictionary`.`stopword`=null where `dictionary`.`id`=@id;
+end if;
+if `_emotion` IS NOT NULL THEN
+update `dictionary` 
+set `dictionary`.`joy`= @joy, 
+`dictionary`.`trust` = @trust, 
+`dictionary`.`fear`=@fear, 
+`dictionary`.`surprise`=@surprise,
+`dictionary`.`sadness`=@sadness,
+`dictionary`.`disgust`=@disgust, 
+`dictionary`.`anger`=@anger, `dictionary`.`anticipation`=@anticipation
+where `dictionary`.`id` = @id;
+end if;
+return (@id);
 END$$
 
 DELIMITER ;
@@ -82,15 +108,15 @@ CREATE TABLE IF NOT EXISTS `dictionary` (
 --
 
 INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, `trust`, `fear`, `surprise`, `sadness`, `disgust`, `anger`, `anticipation`, `changed`) VALUES
-(1, '2021-01-14 18:21:35', 'ru_RU', 'КРАСНЫЙ ФОНАРЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:22:16'),
-(3, '2021-01-14 18:21:35', 'ru_RU', 'КРАСНЫЙ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:22:11'),
-(4, '2021-01-14 18:21:35', 'ru_RU', 'КРАСНЫЙ ТРЯПКА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:22:07'),
+(1, '2021-01-14 18:21:35', 'ru_RU', 'КРАСНЫЙ ФОНАРЬ', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, '2021-01-18 07:26:02'),
+(3, '2021-01-14 18:21:35', 'ru_RU', 'КРАСНЫЙ', NULL, 0, 0, 0, 1, 0, 0, 0, 1, '2021-01-20 07:17:17'),
+(4, '2021-01-14 18:21:35', 'ru_RU', 'КРАСНЫЙ ТРЯПКА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL, '2021-01-18 07:24:05'),
 (6, '2021-01-14 18:24:04', 'ru_RU', 'ПОЛОТЕНЦЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:22:02'),
-(7, '2021-01-14 19:02:40', 'ru_RU', 'НЕВЕРИЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:02:40'),
-(8, '2021-01-14 19:02:40', 'ru_RU', 'ПАНДЕМИЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:02:40'),
+(7, '2021-01-14 19:02:40', 'ru_RU', 'НЕВЕРИЕ', NULL, 0, 0, 0.8, 0, 0, 0, 0, 0, '2021-01-20 08:19:13'),
+(8, '2021-01-14 19:02:40', 'ru_RU', 'ПАНДЕМИЯ', NULL, 0, 0, 0.6, 0, 1, 1, 0, 0, '2021-01-20 08:34:02'),
 (9, '2021-01-14 19:02:40', 'ru_RU', 'СТОЛЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:02:40'),
-(10, '2021-01-14 19:02:40', 'ru_RU', 'ОПАСНЫЙ КОРОНАВИРУС', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:02:40'),
-(12, '2021-01-14 19:11:24', 'ru_RU', 'ВРЕМЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:11:24'),
+(10, '2021-01-14 19:02:40', 'ru_RU', 'ОПАСНЫЙ КОРОНАВИРУС', NULL, 0, 1, 1, 0, 0, 1, 0, 0, '2021-01-20 08:32:44'),
+(12, '2021-01-14 19:11:24', 'ru_RU', 'ВРЕМЯ', NULL, 0, 0, 0, 0, 0.4, 0, 0, 0, '2021-01-20 08:33:03'),
 (13, '2021-01-14 19:11:24', 'ru_RU', 'ПРОПОВЕДЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:11:24'),
 (14, '2021-01-14 19:11:24', 'ru_RU', 'ЛИТУРГИЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:11:24'),
 (15, '2021-01-14 19:11:24', 'ru_RU', 'ХРАМ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-14 19:11:24'),
