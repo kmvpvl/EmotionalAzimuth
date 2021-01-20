@@ -74,6 +74,34 @@ function drawLexemes() {
 							lexeme.emotion[axis] = $("[modal_emotion='"+axis+"']").val();
 							$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
 						});
+						switch (lexeme.stopword) {
+							case '':
+								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('off');
+								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('disable');
+								break;
+						
+							case 0:
+								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
+								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
+								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('off');
+								break;
+
+							case 1:
+								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('off');
+								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
+								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('on');
+								break;
+
+							default:
+								break;
+						}
+						$('#dlgModalEditLexemeEmotionIgnoreOnOff').change(function() {
+							$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle($(this).prop('checked')?'enable':'disable'); 
+							lexeme.stopword = $(this).prop('checked')?($('#dlgModalEditLexemeEmotionIgnoreStopword').prop('checked')?1:0):'';
+						});
+						$('#dlgModalEditLexemeEmotionIgnoreStopword').change(function() {
+							lexeme.stopword = $('#dlgModalEditLexemeEmotionIgnoreOnOff').prop('checked')?($('#dlgModalEditLexemeEmotionIgnoreStopword').prop('checked')?1:0):'';
+						});
 						$("#dlgModalEditLexeme").modal('show');
 					});
                 }
@@ -160,6 +188,8 @@ function drawEmotion (emotion) {
 		  <flower id="dlgModalEditLexemeFlower">
 
 		  </flower>
+		  <input id="dlgModalEditLexemeEmotionIgnoreOnOff" type="checkbox" checked data-toggle="toggle" data-on="on" data-off="off" data-onstyle="success" data-offstyle="danger" data-width="100">
+		  <input id="dlgModalEditLexemeEmotionIgnoreStopword" type="checkbox" checked data-toggle="toggle" data-on="ignore" data-off="include" data-onstyle="success" data-offstyle="danger" data-width="100">
 		  <span class="container-fluid">
 			<div class="row">
 				<div class="col-sm-3 joy">joy
