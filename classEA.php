@@ -41,16 +41,8 @@ class EmotionalDictionary {
         return $z;
     }
     function add(EmotionalLexeme $eL) {
-        //echo "select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', null, " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ")";
-	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', null, " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ")");
+	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', " . (is_null($eL->ignore) ? "null" : $eL->ignore) . ", " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ");");
 	    if ($this->dblink->errno) throw new EAException("Could not create lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
-#        if (!is_null($v)) $eL->emotion = new EmotionalVector($v);
-#        if (!array_key_exists($eL->index, $this->eLexemes) || is_null($this->eLexemes[$eL->index]->emotion)) {
-#            $this->eLexemes[$eL->index] = $eL;
-#        } else {
-#            var_dump($this->eLexemes[$eL->index]);
-#            throw new EAException('Lexeme already exists with not null EmotionalVector. Use update method to update emotion');
-#        }
     }
     function getLexeme($lexeme, $lang): ?EmotionalLexeme {
         $el = new EmotionalLexeme($lexeme, $lang);
@@ -105,7 +97,7 @@ class EmotionalLexeme implements JsonSerializable {
             $this->lexeme_id = $arr["id"];
             $this->src = $arr["lexeme"];
             $this->lang = $arr["lang"];
-            $this->ignore = $arr["stopword"];
+            $this->ignore = ($arr["stopword"]!=""?$arr["stopword"]:null);
             $ev = new EmotionalVector();
             $ev->fillByArray($arr);
             //var_dump($ev);
