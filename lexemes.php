@@ -192,30 +192,30 @@ function drawEmotion (emotion) {
 		  <input id="dlgModalEditLexemeEmotionIgnoreStopword" type="checkbox" checked data-toggle="toggle" data-on="ignore" data-off="include" data-onstyle="danger" data-offstyle="success" data-width="100">
 		  <span class="container-fluid">
 			<div class="row">
-				<div class="col-sm-3 joy">joy
+				<div class="col-sm-3 joy">joy радость
 				<input class="joy" modal_emotion="joy" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
-				<div class="col-sm-3 trust">trust
+				<div class="col-sm-3 trust">trust доверие
 				<input class="trust" modal_emotion="trust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
-				<div class="col-sm-3 fear">fear
+				<div class="col-sm-3 fear">fear страх
 				<input class="fear" modal_emotion="fear" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
-				<div class="col-sm-3 surprise">surprise
+				<div class="col-sm-3 surprise">surprise удивление
 				<input class="surprise" modal_emotion="surprise" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-sm-3 sadness">sadness
+				<div class="col-sm-3 sadness">sadness печаль
 				<input class="sadness" modal_emotion="sadness" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
-				<div class="col-sm-3 disgust">disgust
+				<div class="col-sm-3 disgust">disgust отвращение
 				<input class="disgust" modal_emotion="disgust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
-				<div class="col-sm-3 anger">anger
+				<div class="col-sm-3 anger">anger злость
 				<input class="anger" modal_emotion="anger" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
-				<div class="col-sm-3 anticipation">anticipation
+				<div class="col-sm-3 anticipation">anticipation предвкушение
 				<input class="anticipation" modal_emotion="anticipation" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
 			</div>
