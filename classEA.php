@@ -141,10 +141,17 @@ class EmotionalText {
                 $part_of_speech = $morphy->getPartOfSpeech($word);
                 if (!$word) continue;
                 if (!$part_of_speech) continue;
+                //var_dump($word);
+                //var_dump($part_of_speech);
                 //echo '+', $word, '+';
                 if (in_array('СОЮЗ', $part_of_speech)
                 || in_array('ПРЕДЛ', $part_of_speech)
                 ) continue;
+                if (in_array('ЧАСТ', $part_of_speech)) {
+                    $prev_part = $word;
+                    //echo $prev_part, "\n";   
+                    continue;
+                }
                 if (in_array('С', $part_of_speech)) {
                     if ($prev_noun) {
                         $this->addLexeme(new EmotionalLexeme($prev_noun, $lang));
@@ -236,11 +243,6 @@ class EmotionalText {
                     $prev_part = "";
                     continue;
                 }
-                if (in_array('ЧАСТ', $part_of_speech)) {
-                    $prev_part = $word;
-                    //echo $prev_part, "\n";   
-                    continue;
-                }
             }
         }
     }
@@ -269,6 +271,7 @@ class EmotionalLexeme implements JsonSerializable {
         if (!is_null($arr) && is_array($arr)) {
             $this->lexeme_id = $arr["id"];
             $this->src = $arr["lexeme"];
+            var_dump($this->src);
             $this->lang = $arr["lang"];
             $this->ignore = $arr["stopword"];
             $ev = new EmotionalVector();
@@ -280,7 +283,7 @@ class EmotionalLexeme implements JsonSerializable {
                 $this->emotion = $ev;
             }
         } else {
-            $this->src = $_src;
+            $this->src = trim($_src);
             $this->lang = $lang;
             $this->emotion = null;
         }
