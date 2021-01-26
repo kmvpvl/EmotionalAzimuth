@@ -271,7 +271,7 @@ class EmotionalLexeme implements JsonSerializable {
         if (!is_null($arr) && is_array($arr)) {
             $this->lexeme_id = $arr["id"];
             $this->src = $arr["lexeme"];
-            var_dump($this->src);
+            //var_dump($this->src);
             $this->lang = $arr["lang"];
             $this->ignore = $arr["stopword"];
             $ev = new EmotionalVector();
