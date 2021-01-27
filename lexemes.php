@@ -215,7 +215,7 @@ function drawEmotion (emotion) {
 				<div class="col-sm-3 anger">anger злость
 				<input class="anger" modal_emotion="anger" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
-				<div class="col-sm-3 anticipation">anticipation предвкушение
+				<div class="col-sm-3 anticipation">anticipation ожидание
 				<input class="anticipation" modal_emotion="anticipation" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
 				</div>
 			</div>
