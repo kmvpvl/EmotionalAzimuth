@@ -45,16 +45,18 @@ class EmotionalDictionary {
         $database = "";
         $user = "";
         $password = "";
+        $port = "";
 		
 		if (array_key_exists("database", $settings)) {
 			if (array_key_exists("host", $settings["database"])) $host = $settings["database"]["host"];
 			if (array_key_exists("database", $settings["database"])) $database = $settings["database"]["database"];
 			if (array_key_exists("user", $settings["database"])) $user = $settings["database"]["user"];
 			if (array_key_exists("password", $settings["database"])) $password = $settings["database"]["password"];
+			if (array_key_exists("port", $settings["database"])) $port = $settings["database"]["port"];
         } else throw new EAException ("database settings are absent"); 
         //var_dump($settings);
 		
-		$this->dblink = new mysqli($host, $user, $password, $database);
+		$this->dblink = new mysqli($host, $user, $password, $database, $port);
 		if ($this->dblink->connect_errno) throw new EAException("Unable connect to database (`" . $host . "` - `" . $database . "`): " . $this->dblink->connect_errno . " - " . $this->dblink->connect_error);
 		$this->dblink->set_charset("utf-8");
 		$this->dblink->query("set names utf8");
