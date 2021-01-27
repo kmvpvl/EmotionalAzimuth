@@ -1,4 +1,39 @@
 <?php
+error_reporting(E_ALL | E_STRICT);
+require_once (dirname(__FILE__) . '/../phpmorphy/libs/phpmorphy/src/common.php');
+$opts = array(
+	// storage type, follow types supported
+	// PHPMORPHY_STORAGE_FILE - use file operations(fread, fseek) for dictionary access, this is very slow...
+	// PHPMORPHY_STORAGE_SHM - load dictionary in shared memory(using shmop php extension), this is preferred mode
+	// PHPMORPHY_STORAGE_MEM - load dict to memory each time when phpMorphy intialized, this useful when shmop ext. not activated. Speed same as for PHPMORPHY_STORAGE_SHM type
+	'storage' => PHPMORPHY_STORAGE_FILE,
+	// Enable prediction by suffix
+	'predict_by_suffix' => true, 
+	// Enable prediction by prefix
+	'predict_by_db' => true,
+	// TODO: comment this
+	'graminfo_as_text' => true,
+);
+
+// Path to directory where dictionaries located
+$dir = dirname(__FILE__) . '/../phpmorphy/libs/phpmorphy/dicts';
+$lang = 'ru_RU';
+
+$morphy = null;
+$eDict = null;
+try {
+    $morphy = new phpMorphy($dir, $lang, $opts);
+} catch(phpMorphy_Exception $e) {
+    die('Error occured while creating phpMorphy instance: ' . PHP_EOL . $e);
+}
+
+try {
+    $eDict = new EmotionalDictionary();
+} catch(EAException $e) {
+    die('Error occured while creating EmotionalDictionary instance: ' . PHP_EOL . $e);
+}
+// Create phpMorphy instance
+
 class EAException extends Exception {
 
 }
@@ -71,10 +106,137 @@ class EmotionalDictionary {
 }
 class EmotionalText {
     protected $text;
-    protected $eLexemes;
-    function __construct(string $text) {
+    public $sentenses;
+    public $emotion;
+    public $lexemes;
+    public $lang;
+    function __construct(string $text, $lang) {
+        global $morphy;
         $this->text = $text;
-        $this->eLexemes = array();
+        $this->lang = $lang;
+        $x = EmotionalText::parseText($text);
+        
+        if (sizeof($x) > 1) {
+            $this->sentenses = array();
+            foreach ( $x as $s) {
+                $this->sentenses[] = new EmotionalText($s, $lang);
+            }
+        } else {
+            $this->lexemes = array();
+            $words = EmotionalText::parseSentence($text);
+            $prev_noun = "";
+            $prev_adj = "";
+            $prev_part = "";
+            $prev_adv = "";
+            foreach($words as $word) {
+                $word = trim(mb_strtoupper($word));
+                $part_of_speech = $morphy->getPartOfSpeech($word);
+                if (!$word) continue;
+                if (!$part_of_speech) continue;
+                //var_dump($word);
+                //var_dump($part_of_speech);
+                //echo '+', $word, '+';
+                if (in_array('СОЮЗ', $part_of_speech)
+                || in_array('ПРЕДЛ', $part_of_speech)
+                ) continue;
+                if (in_array('ЧАСТ', $part_of_speech)) {
+                    $prev_part = $word;
+                    //echo $prev_part, "\n";   
+                    continue;
+                }
+                if (in_array('С', $part_of_speech)) {
+                    if ($prev_noun) {
+                        $this->addLexeme(new EmotionalLexeme($prev_noun, $lang));
+                        //echo $prev_noun, "\n";   
+                    }
+                    $prev_noun = $morphy->castFormByGramInfo($word,'С',array('ЕД','ИМ'),TRUE)[0];
+                    if ($prev_adj) {
+                        $this->addLexeme(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
+                        //echo $prev_adj, " ", $prev_noun, "\n";   
+                        $prev_noun = "";
+                        $prev_part = "";
+                        $prev_adj = "";
+                    }
+                    continue;
+                }
+                if (in_array('П', $part_of_speech)) {
+                    if ($prev_adj) {
+                        if ($prev_noun) {
+                            $this->addLexeme(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
+                            //echo $prev_adj, " ", $prev_noun, "\n";   
+                            $prev_noun = "";
+                            $prev_part = "";
+                            $prev_adj = "";
+                        } else {
+                            $this->addLexeme(new EmotionalLexeme($prev_adj, $lang));
+                            //echo $prev_adj, "\n";   
+                        }
+                    }
+                    $prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'П',array('ЕД','ИМ'),TRUE)[0];
+                    continue;
+                }
+                if (in_array('КР_ПРИЛ', $part_of_speech)) {
+                    if ($prev_adj) {
+                        if ($prev_noun) {
+                            $this->addLexeme(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
+                            //echo $prev_adj, " ", $prev_noun, "\n";   
+                            $prev_noun = "";
+                            $prev_part = "";
+                            $prev_adj = "";
+                        } else {
+                            $this->addLexeme(new EmotionalLexeme($prev_adj, $lang));
+                            //echo $prev_adj, "\n";   
+                        }
+                    }
+                    $prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'П',array('ЕД','ИМ'),TRUE)[0];
+                    if ($prev_noun) {
+                        $this->addLexeme(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
+                        //echo $prev_adj, " ", $prev_noun, "\n";   
+                        $prev_noun = "";
+                        $prev_part = "";
+                        $prev_adj = "";
+                    }
+                    continue;
+                }
+                if (in_array('ПРИЧАСТИЕ', $part_of_speech) ) {
+                    if ($prev_adj) {
+                        if ($prev_noun) {
+                            $this->addLexeme(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
+                            //echo $prev_adj, " ", $prev_noun, "\n";   
+                            $prev_noun = "";
+                            $prev_part = "";
+                            $prev_adj = "";
+                        } else {
+                            $this->addLexeme(new EmotionalLexeme($prev_adj, $lang));
+                            //echo $prev_adj, "\n";   
+                        }
+                    }
+                    $prev_adj = $prev_part?$prev_part:"".$morphy->castFormByGramInfo($word,'ПРИЧАСТИЕ',array('ЕД','ИМ'),TRUE)[0];
+                    if ($prev_noun) {
+                        $this->addLexeme(new EmotionalLexeme($prev_adj." ".$prev_noun, $lang));
+                        //echo $prev_adj, " ", $prev_noun, "\n";   
+                        $prev_noun = "";
+                        $prev_part = "";
+                        $prev_adj = "";
+                    }
+                    continue;
+                }
+                if (in_array('Н', $part_of_speech)) {
+                    $prev_adv = $morphy->castFormByGramInfo($word,'Н',array(),TRUE)[0];
+                    $this->addLexeme(new EmotionalLexeme($prev_part?$prev_part.' ':"".$prev_adv, $lang));
+                    //echo $prev_part?$prev_part.' ':"", $prev_adv, "\n";   
+                    $prev_part = "";
+                    continue;
+                }
+                if (in_array('Г', $part_of_speech)) {
+                    $prev_verb = $morphy->castFormByGramInfo($word,'ИНФИНИТИВ',array(),TRUE)[0];
+                    $this->addLexeme(new EmotionalLexeme($prev_part?$prev_part.' ':"".$prev_verb, $lang));
+                    //echo $prev_part?$prev_part.' ':"", $prev_verb, "\n";   
+                    $prev_part = "";
+                    continue;
+                }
+            }
+        }
     }
     static function parseSentence($sentence) {
         return preg_split('/[,.\(\)\-\—:;"_»«\p{Zs}]+/imu', $sentence);
@@ -82,6 +244,11 @@ class EmotionalText {
     }
     static function parseText($text){
         return preg_split('/[.|!|?]\s/i', $text);
+    }
+    protected function addLexeme(EmotionalLexeme $el){
+        global $eDict;
+        $eDict->add($el);
+        
     }
 
 }
@@ -96,6 +263,7 @@ class EmotionalLexeme implements JsonSerializable {
         if (!is_null($arr) && is_array($arr)) {
             $this->lexeme_id = $arr["id"];
             $this->src = $arr["lexeme"];
+            //var_dump($this->src);
             $this->lang = $arr["lang"];
             $this->ignore = ($arr["stopword"]!=""?$arr["stopword"]:null);
             $ev = new EmotionalVector();
@@ -107,7 +275,7 @@ class EmotionalLexeme implements JsonSerializable {
                 $this->emotion = $ev;
             }
         } else {
-            $this->src = $_src;
+            $this->src = trim($_src);
             $this->lang = $lang;
             $this->emotion = null;
         }
