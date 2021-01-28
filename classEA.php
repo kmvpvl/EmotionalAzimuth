@@ -142,9 +142,19 @@ class EmotionalDictionary {
         return $el;
     }
     function __get($name) {
+        global $user;
+        if (!is_null($user)) $user->hasRole("read");
         switch($name) {
             case 'lexemes':
                 return $this->eLexemes;
+            break;
+            case 'statistics':
+                $x = $this->dblink->query("call getStatistics()");
+                if ($this->dblink->errno) throw new EAException("Could not get statistics: " . $this->dblink->errno . " - " . $this->dblink->error);
+                if (!$x) throw new EAException("Could not get statistics");
+                $y = $x->fetch_assoc();
+                if (!$y) throw new EAException("Could not get statistics");
+                return $y;
             break;
             default:
                 throw new Exception("Unknown property: '".$name."'");
