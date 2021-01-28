@@ -1,1 +1,5 @@
 .vscode/settings.json
+settings.ini
+*.ini
+users.xml
+settings.ini

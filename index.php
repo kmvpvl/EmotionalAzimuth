@@ -20,14 +20,18 @@
 <body>
 <script>
 $(window).ready(function () {
-    calcResize();
+	calcResize();
+	showLoginForm();
+	tryLogin();
 });
 $(window).resize( function (){
     calcResize();
 });
 function calcResize() {
     $('instance').css('height', $(window).height() - $('instance').offset().top + "px");
-    $("#errorLoadingMessage").offset({top: -$("#errorLoadingMessage").outerHeight(), left: 0});
+    $("#errorLoadingMessage").offset({top: $(window).height()-$("#errorLoadingMessage").outerHeight(), left: 0});
+    $("#loginform").offset({top: ($(window).height() - $("#loginform").outerHeight())/2, left: 0});
+    $("#loadingSpinner").offset({top: ($(window).height() - $("#loadingSpinner").outerHeight())/2, left: ($("body").innerWidth() - $("#loadingSpinner").outerWidth())/2});
 }
 function showLoading() {
 	$("#errorLoadingMessage").hide();
@@ -36,8 +40,13 @@ function showLoading() {
 function hideLoading() {
 	$("#loadingSpinner").hide();
 } 
+function hideLoginForm() {
+	$("#loginform").hide();
+}
 function showLoadingError(_text) {
-    $('body').append('<div id="errorLoadingMessage" class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><span></span></div>');
+	if (!$("#errorLoadingMessage").length) {
+		$('body').append('<div id="errorLoadingMessage" class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><span></span></div>');
+	}
 	hideLoading();
 	$("#errorLoadingMessage > span").html(_text);
     calcResize();
@@ -46,13 +55,71 @@ function showLoadingError(_text) {
 function clearInstance() {
 	$("instance").html("");
 }
+function showLoginForm() {
+	$("#loginform").show();
+	$("#submitLogin").on ('click', function (){
+		tryLogin();
+	})
+}
+function tryLogin() {
+	if (!$("#username").val()) return;
+	showLoading();
+	hideLoginForm();
+	var p = $.post("lexemes.php",
+	{
+		username: $("#username").val(),
+		password: $("#password").val(),
+		language: $("#language").val(),
+		timezone: $("#timezone").val()
+	},
+	function(data, status){
+		hideLoading();
+		switch (status) {
+			case "success":
+				$("instance").html(data);
+				break;
+			default:
+				clearInstance();
+				showLoginForm();
+		}
+	});
+	p.fail(function(data, status) {
+		hideLoading();
+		switch (data.status) {
+			case 401:
+				clearInstance();
+				showLoginForm();
+				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
+				break;
+			default:				
+				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
+		}
+	})
+}
 </script>
 <instance>
-<?php
-include 'lexemes.php';
-?>
 </instance>
 <div id="loadingSpinner" class="spinner-border"></div>
-
+<div id="loginform">
+	<div class="container">
+		<label for="username">User name</label>
+		<input type="text" placeholder="Enter Username" id="username" name="username" required value="">
+		<label for="password">Password</label>
+		<input type="password" placeholder="Enter Password" id="password" required value=""></input>
+		<label for="timezone">Timezone</label>
+		<input id="timezone" type="number" min="-12" max="12" class="digit" value="3"></input>
+		<label for="language">Language</label>
+		<select id="language" type="select"><option value="en" default="default">EN</option><option value="ru">RU</option></select>
+		
+		<button id="submitLogin">Login</button>
+		<label>
+		<input type="checkbox" checked="checked" name="remember"> Remember me</input>
+		</label>
+	</div>
+	
+	<div class="container" style="background-color:#f1f1f1">
+		<span class="psw">Forgot <a href="">password?</a></span>
+	</div>
+</div>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <?php
+require_once('classEA.php');
 $lex = $_POST["lexeme"];
 $lang = $_POST["lang"];
-require_once('classEA.php');
 $dict = new EmotionalDictionary();
 echo '{"result":';
 $res = '"OK"';
