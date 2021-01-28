@@ -1,5 +1,18 @@
 <?php
 error_reporting(E_ALL | E_STRICT);
+if (!isset($_POST["username"]) || !isset($_POST["password"]) || !isset($_POST["language"]) || !isset($_POST["timezone"])) {
+    http_response_code(401);
+    die ("Unathorized request!");
+}
+$user = null;
+try {
+    $user = new EAUser($_POST["username"], $_POST["password"]);
+    $user->authorize();
+} catch (EAException $e) {
+    http_response_code(401);
+    die ($e->getMessage());
+}
+
 require_once (dirname(__FILE__) . '/../phpmorphy/libs/phpmorphy/src/common.php');
 $opts = array(
 	// storage type, follow types supported
@@ -37,6 +50,29 @@ try {
 class EAException extends Exception {
 
 }
+class EAUser {
+    protected $_hash;
+    protected $username;
+    function __construct($username, $password) {
+        $this->username = $username;
+        $this->_hash = md5($username . $password);
+    }
+    function authorize() {
+        $users_xml = simplexml_load_file(dirname(__FILE__) . '/users.xml');
+        if (!$users_xml) throw new EAException("Users.xml not found!");
+        $found = $users_xml->xpath("//user[@id='" . $this->username . "']");
+        if (!$found) throw new EAException("User " . $this->username . ' not found');
+        if ((string) $found[0]["md5"] != $this->_hash) throw new EAException("Password incorrect! " . $this->_hash);
+        return $found[0];
+    }
+    function hasRole($rolename) {
+        $xml_user = $this->authorize();
+        $roles = (string) $xml_user["roles"];
+        $roles_arr = explode(";", $roles);
+        if (!in_array($rolename, $roles_arr)) throw new EAException("User ".$this->username." has no ".$rolename." role!");
+        return true;
+    }
+}
 class EmotionalDictionary {
     protected $dblink;
     function __construct() {
@@ -66,6 +102,8 @@ class EmotionalDictionary {
 		$this->dblink->close();
     }
     function getUnassignedLexemesTopN(int $N = 10) {
+        global $user;
+        if (!is_null($user)) $user->hasRole("read");
 	    $x = $this->dblink->query("call getUnassignedDictionaryTopN(" . $N . ")");
         if ($this->dblink->errno) throw new EAException("Could not get lexemes from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
         if (!$x) throw new EAException("Could not get lexemes from dictionary: lexemes are absent");
@@ -78,10 +116,19 @@ class EmotionalDictionary {
         return $z;
     }
     function add(EmotionalLexeme $eL) {
+        global $user;
+        if (!is_null($user)) $user->hasRole("read") && $user->hasRole("save_dictionary");
 	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', " . (is_null($eL->ignore) ? "null" : $eL->ignore) . ", " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ");");
 	    if ($this->dblink->errno) throw new EAException("Could not create lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
     }
+    function addDraft(EmotionalLexeme $eL) {
+        global $user;
+        if (!is_null($user)) $user->hasRole("read") && $user->hasRole("save_draft");
+
+    }
     function getLexeme($lexeme, $lang): ?EmotionalLexeme {
+        global $user;
+        if (!is_null($user)) $user->hasRole("read");
         $el = new EmotionalLexeme($lexeme, $lang);
 	    $x = $this->dblink->query("call getLexemeFromDictionary('" . $el->normal . "', '" . $el->lang . "')");
         if ($this->dblink->errno) throw new EAException("Could not get lexeme from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
@@ -97,9 +144,19 @@ class EmotionalDictionary {
         return $el;
     }
     function __get($name) {
+        global $user;
+        if (!is_null($user)) $user->hasRole("read");
         switch($name) {
             case 'lexemes':
                 return $this->eLexemes;
+            break;
+            case 'statistics':
+                $x = $this->dblink->query("call getStatistics()");
+                if ($this->dblink->errno) throw new EAException("Could not get statistics: " . $this->dblink->errno . " - " . $this->dblink->error);
+                if (!$x) throw new EAException("Could not get statistics");
+                $y = $x->fetch_assoc();
+                if (!$y) throw new EAException("Could not get statistics");
+                return $y;
             break;
             default:
                 throw new Exception("Unknown property: '".$name."'");
@@ -249,8 +306,7 @@ class EmotionalText {
     }
     protected function addLexeme(EmotionalLexeme $el){
         global $eDict;
-        $eDict->add($el);
-        
+        if ($eDict) $eDict->add($el);
     }
 
 }

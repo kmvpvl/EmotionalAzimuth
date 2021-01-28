@@ -20,6 +20,10 @@ instance {
   width: 100%;
   overflow-y: auto;
 }
+#loginform {
+  display: none;
+  position: absolute;
+}
 lexeme {
   display: block;
   cursor: pointer;
@@ -66,11 +70,11 @@ lexeme > emotion {
   display: none;
 }
 #loadingSpinner {
-  position: relative;
+  position: absolute;
   display: none;
 }
 #errorLoadingMessage {
   display: none;
-  position: relative;
+  position: absolute;
   /*z-index: 0;*/ 
 }

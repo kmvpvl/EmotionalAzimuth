@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jan 26, 2021 at 04:12 PM
+-- Generation Time: Jan 28, 2021 at 01:48 PM
 -- Server version: 10.5.8-MariaDB
 -- PHP Version: 7.4.13
 
@@ -31,6 +31,14 @@ DROP PROCEDURE IF EXISTS `getLexemeFromDictionary`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getLexemeFromDictionary` (IN `_lexeme` VARCHAR(250), IN `_lang` VARCHAR(5))  NO SQL
 select * from `dictionary` where `dictionary`.`lexeme` like `_lexeme` and `dictionary`.`lang` like `_lang`$$
 
+DROP PROCEDURE IF EXISTS `getStatistics`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getStatistics` ()  NO SQL
+begin 
+set @remain_dict = (select count(id) from `dictionary` where `dictionary`.`stopword` is null);
+set @all_dict = (select count(id) from `dictionary`);
+select @all_dict as `all_dict`, @remain_dict as `remain_dict`;
+end$$
+
 DROP PROCEDURE IF EXISTS `getUnassignedDictionaryTopN`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getUnassignedDictionaryTopN` (IN `N` INT)  NO SQL
 select * from `dictionary` where `dictionary`.`stopword` is null LIMIT N$$
@@ -38,6 +46,43 @@ select * from `dictionary` where `dictionary`.`stopword` is null LIMIT N$$
 --
 -- Functions
 --
+DROP FUNCTION IF EXISTS `addDraftLexemeToDictionary`$$
+CREATE DEFINER=`root`@`localhost` FUNCTION `addDraftLexemeToDictionary` (`_user` VARCHAR(250), `_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_ignore` BOOLEAN, `_emotion` VARCHAR(250)) RETURNS BIGINT(20) UNSIGNED NO SQL
+BEGIN
+set @id = (select `dictionary_draft`.`id` from `dictionary_draft` where `dictionary_draft`.`lang` like `_lang` and `dictionary_draft`.`lexeme` like `_lexeme` and `dictionary_draft`.`user` like `_user`);
+if `_emotion` IS NOT NULL THEN
+select json_extract(`_emotion`, '$.joy') INTO @joy;
+select json_extract(`_emotion`, '$.trust') INTO @trust;
+select json_extract(`_emotion`, '$.fear') INTO @fear;
+select json_extract(`_emotion`, '$.surprise') INTO @surprise;
+select json_extract(`_emotion`, '$.sadness') INTO @sadness;
+select json_extract(`_emotion`, '$.disgust') INTO @disgust;
+select json_extract(`_emotion`, '$.anger') INTO @anger;
+select json_extract(`_emotion`, '$.anticipation') INTO @anticipation;
+end if;
+if @id is null THEN
+insert into `dictionary_draft` (`user`, `lang`, `lexeme`) VALUES (`_user`, `_lang`, `_lexeme`); 
+set @id = LAST_INSERT_ID();
+end if;
+if `_ignore` is not null THEN
+update `dictionary_draft` set `dictionary_draft`.`stopword`=`_ignore` where `dictionary_draft`.`id`=@id;
+ELSE
+update `dictionary_draft` set `dictionary_draft`.`stopword`=null where `dictionary_draft`.`id`=@id;
+end if;
+if `_emotion` IS NOT NULL THEN
+update `dictionary_draft` 
+set `dictionary`.`joy`= @joy, 
+`dictionary_draft`.`trust` = @trust, 
+`dictionary_draft`.`fear`=@fear, 
+`dictionary_draft`.`surprise`=@surprise,
+`dictionary_draft`.`sadness`=@sadness,
+`dictionary_draft`.`disgust`=@disgust, 
+`dictionary_draft`.`anger`=@anger, `dictionary_draft`.`anticipation`=@anticipation
+where `dictionary_draft`.`id` = @id;
+end if;
+return (@id);
+END$$
+
 DROP FUNCTION IF EXISTS `addLexemeToDictionary`$$
 CREATE DEFINER=`root`@`localhost` FUNCTION `addLexemeToDictionary` (`_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_ignore` BOOLEAN, `_emotion` VARCHAR(250)) RETURNS BIGINT(20) UNSIGNED NO SQL
 BEGIN
@@ -84,8 +129,8 @@ DELIMITER ;
 --
 
 DROP TABLE IF EXISTS `dictionary`;
-CREATE TABLE `dictionary` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `dictionary` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `created` timestamp NOT NULL DEFAULT current_timestamp(),
   `lang` varchar(5) DEFAULT NULL,
   `lexeme` varchar(250) NOT NULL,
@@ -98,16 +143,18 @@ CREATE TABLE `dictionary` (
   `disgust` float DEFAULT NULL,
   `anger` float DEFAULT NULL,
   `anticipation` float DEFAULT NULL,
-  `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lexeme` (`lexeme`,`lang`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=282 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `dictionary`
 --
 
 INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, `trust`, `fear`, `surprise`, `sadness`, `disgust`, `anger`, `anticipation`, `changed`) VALUES
-(1, '2021-01-26 14:52:25', 'ru_RU', 'СВЕЖИЙ КЛАДБИЩЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
-(2, '2021-01-26 14:52:25', 'ru_RU', 'ГЛИНЯНЫЙ НАСЫПЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
+(1, '2021-01-26 14:52:25', 'ru_RU', 'СВЕЖИЙ КЛАДБИЩЕ', 0, 0, 0, 0.3, 0, 0, 0, 0, 0, '2021-01-28 13:43:49'),
+(2, '2021-01-26 14:52:25', 'ru_RU', 'ГЛИНЯНЫЙ НАСЫПЬ', NULL, 0, 0.2, 0, 0, 0, 0, 0.5, 0, '2021-01-28 08:35:55'),
 (3, '2021-01-26 14:52:25', 'ru_RU', 'СТОИТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (4, '2021-01-26 14:52:25', 'ru_RU', 'НОВЫЙ КРЕСТ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (5, '2021-01-26 14:52:25', 'ru_RU', 'КРЕПКИЙ ДУБ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
@@ -388,26 +435,32 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (280, '2021-01-26 14:52:26', 'ru_RU', 'ГОВОРИТЬСЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:26'),
 (281, '2021-01-26 14:52:26', 'ru_RU', 'ДНЕВНИК', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:26');
 
---
--- Indexes for dumped tables
---
+-- --------------------------------------------------------
 
 --
--- Indexes for table `dictionary`
---
-ALTER TABLE `dictionary`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `lexeme` (`lexeme`,`lang`) USING BTREE;
-
---
--- AUTO_INCREMENT for dumped tables
+-- Table structure for table `dictionary_draft`
 --
 
---
--- AUTO_INCREMENT for table `dictionary`
---
-ALTER TABLE `dictionary`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=282;
+DROP TABLE IF EXISTS `dictionary_draft`;
+CREATE TABLE IF NOT EXISTS `dictionary_draft` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `user` varchar(250) NOT NULL,
+  `lang` varchar(5) DEFAULT NULL,
+  `lexeme` varchar(250) NOT NULL,
+  `stopword` tinyint(1) DEFAULT NULL,
+  `joy` float DEFAULT NULL,
+  `trust` float DEFAULT NULL,
+  `fear` float DEFAULT NULL,
+  `surprise` float DEFAULT NULL,
+  `sadness` float DEFAULT NULL,
+  `disgust` float DEFAULT NULL,
+  `anger` float DEFAULT NULL,
+  `anticipation` float DEFAULT NULL,
+  `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lexeme` (`lexeme`,`lang`,`user`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

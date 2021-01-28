@@ -16,7 +16,12 @@ function drawLexeme(lex) {
 }
 function saveLexeme(lex) {
 	showLoading();
-	var p = $.post("apiAssignEmotionToLexeme.php", lex,
+	var p = $.post("apiAssignEmotionToLexeme.php", {
+		username: $("#username").val(),
+		password: $("#password").val(),
+		language: $("#language").val(),
+		timezone: $("#timezone").val(),
+		lexeme: lex },
 	function(data, status){
 		hideLoading();
 		switch (status) {
@@ -25,14 +30,14 @@ function saveLexeme(lex) {
 				break;
 			default:
 				clearLexemesList();
-				//showLoginForm();
+				showLoginForm();
 		}
 	});
 	p.fail(function(data, status) {
 		hideLoading();
 		switch (data.status) {
-			case 400:
-				//showLoginForm();
+			case 401:
+				showLoginForm();
 				break;
 			default:;			
 		}
@@ -43,6 +48,10 @@ function drawLexemes() {
 	showLoading();
 	var p = $.post("apiGetDictionary.php",
 	{
+		username: $("#username").val(),
+		password: $("#password").val(),
+		language: $("#language").val(),
+		timezone: $("#timezone").val(),
 		count: 10
 	},
 	function(data, status){
@@ -104,19 +113,21 @@ function drawLexemes() {
 						});
 						$("#dlgModalEditLexeme").modal('show');
 					});
-                }
+                } else {
+					showLoadingError(ls.description);
+				}
 				break;
 			default:
 				clearLexemesList();
-				//showLoginForm();
+				showLoginForm();
 		}
 	});
 	p.fail(function(data, status) {
 		hideLoading();
 		switch (data.status) {
-			case 400:
+			case 401:
 				clearLexemesList();
-				//showLoginForm();
+				showLoginForm();
 				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
 				break;
 			default:				
