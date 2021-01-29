@@ -9,6 +9,9 @@ body {
   padding:0px;
   overflow:hidden;
 }
+a {
+  cursor: pointer;
+}
 instance {
   display: block;
   position: relative;

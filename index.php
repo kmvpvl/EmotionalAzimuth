@@ -29,7 +29,7 @@
 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
 	<ul class="navbar-nav mr-auto">
 		<li class="nav-item active">
-			<a class="nav-link" instance="lexemes.php" id="menuDictionary">Factory</a>
+			<a class="nav-link" instance="lexemes.php" id="menuDictionary">Lexemes</a>
 		</li>
 		<li class="nav-item" >
 			<a class="nav-link" instance="statistics.php" id="menuStat">Stat</a>
@@ -54,6 +54,8 @@ $(window).ready(function () {
 	tryLogin();
 	$("a[instance]").on ('click', function (event) {
 		showLoading();
+		$(".nav-item").removeClass("active");
+		$(this).parent().addClass("active");
 		var p = $.post(event.target.attributes["instance"].value,
 		{
 			username: $("#username").val(),

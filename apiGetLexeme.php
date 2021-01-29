@@ -1,15 +1,14 @@
 <?php
-require_once('classEA.php');
-$lex = $_POST["lexeme"];
-$lang = $_POST["lang"];
-$dict = new EmotionalDictionary();
 echo '{"result":';
-$res = '"OK"';
 try {
+    require_once('classEA.php');
+    $res = '"OK"';
+    $lex = $_POST["lexeme"];
+    $lang = $_POST["lang"];
     $res .= ', "data" : ';
-    $u = $dict->getLexeme($lex, $lang);
+    if ($eDict) $u = $eDict->getLexeme($lex, $lang);
     $res .= json_encode($u);
-} catch (Exception $e) {
+} catch (EAException | phpMorphy_Exception | Exception $e) {
     $res = '"FAIL", "description" : "' . $e->getMessage() . '"';  
 }
 echo $res . '}';

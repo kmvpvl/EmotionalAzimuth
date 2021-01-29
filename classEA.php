@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL | E_STRICT);
+error_reporting(E_ERROR | E_STRICT);
 if (!isset($_POST["username"]) || !isset($_POST["password"]) || !isset($_POST["language"]) || !isset($_POST["timezone"])) {
     http_response_code(401);
     die ("Unathorized request!");
@@ -34,20 +34,10 @@ $lang = 'ru_RU';
 
 $morphy = null;
 $eDict = null;
-try {
-    $morphy = new phpMorphy($dir, $lang, $opts);
-} catch(phpMorphy_Exception $e) {
-    die('Error occured while creating phpMorphy instance: ' . PHP_EOL . $e);
-}
+$morphy = new phpMorphy($dir, $lang, $opts);
+$eDict = new EmotionalDictionary();
 
-try {
-    $eDict = new EmotionalDictionary();
-} catch(EAException $e) {
-    die('Error occured while creating EmotionalDictionary instance: ' . PHP_EOL . $e);
-}
-// Create phpMorphy instance
-
-class EAException extends Exception {
+final class EAException extends Exception {
 
 }
 class EAUser {

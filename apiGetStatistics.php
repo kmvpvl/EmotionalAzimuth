@@ -1,13 +1,12 @@
 <?php
-require_once('classEA.php');
-$dict = new EmotionalDictionary();
 echo '{"result":';
-$res = '"OK"';
 try {
+    require_once('classEA.php');
+    $res = '"OK"';
     $res .= ', "data" : ';
-    $u = $dict->statistics;
+    if ($eDict) $u = $eDict->statistics;
     $res .= json_encode($u);
-} catch (Exception $e) {
+} catch (EAException | phpMorphy_Exception | Exception $e) {
     $res = '"FAIL", "description" : "' . $e->getMessage() . '"';  
 }
 echo $res . '}';

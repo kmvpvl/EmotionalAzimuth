@@ -26,7 +26,7 @@ function saveLexeme(lex) {
 		hideLoading();
 		switch (status) {
 			case "success":
-                //debugger;
+                drawLexemes();
 				break;
 			default:
 				clearLexemesList();
@@ -36,6 +36,7 @@ function saveLexeme(lex) {
 	p.fail(function(data, status) {
 		hideLoading();
 		switch (data.status) {
+			case 400:
 			case 401:
 				showLoginForm();
 				break;
