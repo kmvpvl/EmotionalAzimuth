@@ -32,6 +32,9 @@
 			<a class="nav-link" instance="lexemes.php" id="menuDictionary">Lexemes</a>
 		</li>
 		<li class="nav-item" >
+			<a class="nav-link" instance="text.php" id="menuText">Text</a>
+		</li>
+		<li class="nav-item" >
 			<a class="nav-link" instance="statistics.php" id="menuStat">Stat</a>
 		</li>
 	</ul>
