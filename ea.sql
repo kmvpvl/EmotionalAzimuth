@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jan 28, 2021 at 01:48 PM
+-- Generation Time: Jan 31, 2021 at 03:50 PM
 -- Server version: 10.5.8-MariaDB
 -- PHP Version: 7.4.13
 
@@ -103,8 +103,6 @@ set @id = LAST_INSERT_ID();
 end if;
 if `_ignore` is not null THEN
 update `dictionary` set `dictionary`.`stopword`=`_ignore` where `dictionary`.`id`=@id;
-ELSE
-update `dictionary` set `dictionary`.`stopword`=null where `dictionary`.`id`=@id;
 end if;
 if `_emotion` IS NOT NULL THEN
 update `dictionary` 
@@ -146,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `dictionary` (
   `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `lexeme` (`lexeme`,`lang`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=282 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=319 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `dictionary`
@@ -155,16 +153,16 @@ CREATE TABLE IF NOT EXISTS `dictionary` (
 INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, `trust`, `fear`, `surprise`, `sadness`, `disgust`, `anger`, `anticipation`, `changed`) VALUES
 (1, '2021-01-26 14:52:25', 'ru_RU', 'СВЕЖИЙ КЛАДБИЩЕ', 0, 0, 0, 0.3, 0, 0, 0, 0, 0, '2021-01-28 13:43:49'),
 (2, '2021-01-26 14:52:25', 'ru_RU', 'ГЛИНЯНЫЙ НАСЫПЬ', NULL, 0, 0.2, 0, 0, 0, 0, 0.5, 0, '2021-01-28 08:35:55'),
-(3, '2021-01-26 14:52:25', 'ru_RU', 'СТОИТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
-(4, '2021-01-26 14:52:25', 'ru_RU', 'НОВЫЙ КРЕСТ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
-(5, '2021-01-26 14:52:25', 'ru_RU', 'КРЕПКИЙ ДУБ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
-(6, '2021-01-26 14:52:25', 'ru_RU', 'ТЯЖЕЛЫЙ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
+(3, '2021-01-26 14:52:25', 'ru_RU', 'СТОИТЬ', 1, 0, 0, 0, 0, 0, 0, 0, 0, '2021-01-29 06:48:02'),
+(4, '2021-01-26 14:52:25', 'ru_RU', 'НОВЫЙ КРЕСТ', 1, 0, 0, 0, 0, 0, 0, 0, 0, '2021-01-29 06:48:13'),
+(5, '2021-01-26 14:52:25', 'ru_RU', 'КРЕПКИЙ ДУБ', 0, 0, 0.1, 0, 0, 0, 0, 0, 0, '2021-01-29 06:49:51'),
+(6, '2021-01-26 14:52:25', 'ru_RU', 'ТЯЖЕЛЫЙ', 0, 0, 0, 0.1, 0, 0, 0, 0, 0, '2021-01-29 06:50:46'),
 (7, '2021-01-26 14:52:25', 'ru_RU', 'ГЛАДКИЙ АПРЕЛЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (8, '2021-01-26 14:52:25', 'ru_RU', 'ДЕНЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (9, '2021-01-26 14:52:25', 'ru_RU', 'СЕРЫЙ ПАМЯТНИК', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (10, '2021-01-26 14:52:25', 'ru_RU', 'ПРОСТОРНЫЙ КЛАДБИЩЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (11, '2021-01-26 14:52:25', 'ru_RU', 'УЕЗДНЫЙ ЕЩЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
-(12, '2021-01-26 14:52:25', 'ru_RU', 'ДАЛЁКИЙ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
+(12, '2021-01-26 14:52:25', 'ru_RU', 'ДАЛЁКИЙ', 0, 0, 0, 0.1, 0, 0.1, 0, 0, 0, '2021-01-29 06:51:22'),
 (13, '2021-01-26 14:52:25', 'ru_RU', 'ГОЛЫЙ ДЕРЕВО', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (14, '2021-01-26 14:52:25', 'ru_RU', 'ХОЛОДНЫЙ ВЕТЕР', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (15, '2021-01-26 14:52:25', 'ru_RU', 'ЗВЕНЕТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
@@ -433,7 +431,44 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (278, '2021-01-26 14:52:26', 'ru_RU', 'СТРАНИЧКА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:26'),
 (279, '2021-01-26 14:52:26', 'ru_RU', 'ГДЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:26'),
 (280, '2021-01-26 14:52:26', 'ru_RU', 'ГОВОРИТЬСЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:26'),
-(281, '2021-01-26 14:52:26', 'ru_RU', 'ДНЕВНИК', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:26');
+(281, '2021-01-26 14:52:26', 'ru_RU', 'ДНЕВНИК', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:26'),
+(282, '2021-01-29 07:58:27', 'ru_RU', 'ПОКУПАТЕЛЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(283, '2021-01-29 07:58:27', 'ru_RU', 'СОВЕРШИТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(284, '2021-01-29 07:58:27', 'ru_RU', 'СДЕЛКА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(285, '2021-01-29 07:58:27', 'ru_RU', 'ПРЕДСТАВИТЕЛЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(286, '2021-01-29 07:58:27', 'ru_RU', 'ЛОНДОНСКИЙ РУССКАЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(287, '2021-01-29 07:58:27', 'ru_RU', 'ПОЭТОМУ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(288, '2021-01-29 07:58:27', 'ru_RU', 'ГРУППА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(289, '2021-01-29 07:58:27', 'ru_RU', 'ПРЕДПОЛАГАТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(290, '2021-01-29 07:58:27', 'ru_RU', 'ИЗДАНИЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(291, '2021-01-29 07:58:27', 'ru_RU', 'НОВОЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(292, '2021-01-29 07:58:27', 'ru_RU', 'ВЛАДЕЛЕЦ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:27'),
+(293, '2021-01-29 07:58:28', 'ru_RU', 'ПОРТРЕТ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(294, '2021-01-29 07:58:28', 'ru_RU', 'РУССКИЙ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(295, '2021-01-29 07:58:28', 'ru_RU', 'ПИСАТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(296, '2021-01-29 07:58:28', 'ru_RU', 'ДОСТАТЬСЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(297, '2021-01-29 07:58:28', 'ru_RU', 'ПОЛОТНО', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(298, '2021-01-29 07:58:28', 'ru_RU', 'РУССКОЯЗЫЧНЫЙ КОЛЛЕКЦИОНЕР', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(299, '2021-01-29 07:58:28', 'ru_RU', 'ИТОГОВЫЙ СТОИМОСТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(300, '2021-01-29 07:58:28', 'ru_RU', 'КАРТИНА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(301, '2021-01-29 07:58:28', 'ru_RU', 'ДОРОГОЙ ПОРТРЕТ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(302, '2021-01-29 07:58:28', 'ru_RU', 'ПРОДАВШИЙ ИСТОРИЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(303, '2021-01-29 07:58:28', 'ru_RU', 'ПОБИТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(304, '2021-01-29 07:58:28', 'ru_RU', 'АУКЦИОННЫЙ РЕКОРД', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(305, '2021-01-29 07:58:28', 'ru_RU', 'РАБОТА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(306, '2021-01-29 07:58:28', 'ru_RU', 'МАСТЕР', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(307, '2021-01-29 07:58:28', 'ru_RU', 'РАНЕЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(308, '2021-01-29 07:58:28', 'ru_RU', 'ДОРОГА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(309, '2021-01-29 07:58:28', 'ru_RU', 'СЧИТАТЬСЯ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(310, '2021-01-29 07:58:28', 'ru_RU', 'БОТТИЧЕЛЛИ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(311, '2021-01-29 07:58:28', 'ru_RU', 'МАДОННА', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(312, '2021-01-29 07:58:28', 'ru_RU', 'РОКФЕЛЛЕР', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(313, '2021-01-29 07:58:28', 'ru_RU', 'МЛАДЕНЕЦ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(314, '2021-01-29 07:58:28', 'ru_RU', 'ЮНЫЙ ИОАНН', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:28'),
+(315, '2021-01-29 07:58:29', 'ru_RU', 'КРЕСТИТЕЛЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:29'),
+(316, '2021-01-29 07:58:29', 'ru_RU', 'КУПИТЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:29'),
+(317, '2021-01-29 07:58:29', 'ru_RU', 'МИЛЛИОН', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 07:58:29'),
+(318, '2021-01-29 11:01:21', 'ru_RU', 'ГЛИНЯННЫЙ НАСЫПЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-29 11:01:21');
 
 -- --------------------------------------------------------
 
