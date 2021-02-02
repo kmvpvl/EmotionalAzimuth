@@ -71,7 +71,8 @@ function drawLexemes() {
 					clearLexemesList();
                     ls.data.forEach(function (item, index) {
                         $("lexemes_list").append(drawLexeme(item));
-                    });
+					});
+					$("lexeme > ignore:contains('1')").parent().addClass('stopword');
 					$('lexeme').on ('click', function(event) {
 						//debugger;
 						//alert(event.currentTarget.attributes['lexeme_id'].nodeValue);

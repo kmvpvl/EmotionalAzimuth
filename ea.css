@@ -66,6 +66,9 @@ lexeme.hover {
   fill:#e87200;
   background-color:#e87200;
 }
+.stopword {
+  color: silver;
+}
 lexeme > lang {
   display: none;
 }
