@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jan 31, 2021 at 03:50 PM
+-- Generation Time: Feb 02, 2021 at 05:13 AM
 -- Server version: 10.5.8-MariaDB
 -- PHP Version: 7.4.13
 
@@ -27,12 +27,29 @@ DELIMITER $$
 --
 -- Procedures
 --
+DROP PROCEDURE IF EXISTS `getDraftDictionaryTopN`$$
+CREATE DEFINER=`ea`@`localhost` PROCEDURE `getDraftDictionaryTopN` (IN `_user` VARCHAR(250), IN `_lexeme_first_letters` VARCHAR(250), IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN, IN `N` INT)  NO SQL
+    SQL SECURITY INVOKER
+select `dictionary`.`lexeme`, `dictionary`.`lang`, `dictionary_draft`.`user`, `dictionary_draft`.`stopword`, `dictionary_draft`.`joy`, `dictionary_draft`.`trust`, `dictionary_draft`.`fear`, `dictionary_draft`.`surprise`, `dictionary_draft`.`sadness`, `dictionary_draft`.`disgust`, `dictionary_draft`.`anger`, `dictionary_draft`.`anticipation`
+from `dictionary` 
+left join `dictionary_draft` on `dictionary`.`lexeme` like `dictionary_draft`.`lexeme` and `dictionary`.`lang` like `dictionary_draft`.`lang`
+where if (`dictionary_draft`.`stopword` is null, 0, 1) = `_assigned` and `dictionary`.`lang` like `_lang` and (`dictionary`.`lexeme` like concat(`_lexeme_first_letters`, '%') or `dictionary`.`lexeme` like concat('% ', `_lexeme_first_letters`, '%'))
+and (`dictionary_draft`.`user` is null or `dictionary_draft`.`user` like `_user`)
+LIMIT `N`$$
+
+DROP PROCEDURE IF EXISTS `getDraftLexemeFromDictionary`$$
+CREATE DEFINER=`ea`@`localhost` PROCEDURE `getDraftLexemeFromDictionary` (IN `_user` VARCHAR(250), IN `_lexeme` VARCHAR(250), IN `_lang` VARCHAR(5))  NO SQL
+    SQL SECURITY INVOKER
+select * from `dictionary_draft` where `dictionary_draft`.`lexeme` like `_lexeme` and `dictionary_draft`.`lang` like `_lang` and `dictionary_draft`.`user` like `_user`$$
+
 DROP PROCEDURE IF EXISTS `getLexemeFromDictionary`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `getLexemeFromDictionary` (IN `_lexeme` VARCHAR(250), IN `_lang` VARCHAR(5))  NO SQL
+CREATE DEFINER=`ea`@`localhost` PROCEDURE `getLexemeFromDictionary` (IN `_lexeme` VARCHAR(250), IN `_lang` VARCHAR(5))  NO SQL
+    SQL SECURITY INVOKER
 select * from `dictionary` where `dictionary`.`lexeme` like `_lexeme` and `dictionary`.`lang` like `_lang`$$
 
 DROP PROCEDURE IF EXISTS `getStatistics`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `getStatistics` ()  NO SQL
+CREATE DEFINER=`ea`@`localhost` PROCEDURE `getStatistics` ()  NO SQL
+    SQL SECURITY INVOKER
 begin 
 set @remain_dict = (select count(id) from `dictionary` where `dictionary`.`stopword` is null);
 set @all_dict = (select count(id) from `dictionary`);
@@ -40,14 +57,16 @@ select @all_dict as `all_dict`, @remain_dict as `remain_dict`;
 end$$
 
 DROP PROCEDURE IF EXISTS `getUnassignedDictionaryTopN`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `getUnassignedDictionaryTopN` (IN `N` INT)  NO SQL
+CREATE DEFINER=`ea`@`localhost` PROCEDURE `getUnassignedDictionaryTopN` (IN `N` INT)  NO SQL
+    SQL SECURITY INVOKER
 select * from `dictionary` where `dictionary`.`stopword` is null LIMIT N$$
 
 --
 -- Functions
 --
 DROP FUNCTION IF EXISTS `addDraftLexemeToDictionary`$$
-CREATE DEFINER=`root`@`localhost` FUNCTION `addDraftLexemeToDictionary` (`_user` VARCHAR(250), `_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_ignore` BOOLEAN, `_emotion` VARCHAR(250)) RETURNS BIGINT(20) UNSIGNED NO SQL
+CREATE DEFINER=`ea`@`localhost` FUNCTION `addDraftLexemeToDictionary` (`_user` VARCHAR(250), `_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_ignore` BOOLEAN, `_emotion` VARCHAR(250)) RETURNS BIGINT(20) UNSIGNED NO SQL
+    SQL SECURITY INVOKER
 BEGIN
 set @id = (select `dictionary_draft`.`id` from `dictionary_draft` where `dictionary_draft`.`lang` like `_lang` and `dictionary_draft`.`lexeme` like `_lexeme` and `dictionary_draft`.`user` like `_user`);
 if `_emotion` IS NOT NULL THEN
@@ -66,12 +85,10 @@ set @id = LAST_INSERT_ID();
 end if;
 if `_ignore` is not null THEN
 update `dictionary_draft` set `dictionary_draft`.`stopword`=`_ignore` where `dictionary_draft`.`id`=@id;
-ELSE
-update `dictionary_draft` set `dictionary_draft`.`stopword`=null where `dictionary_draft`.`id`=@id;
 end if;
 if `_emotion` IS NOT NULL THEN
 update `dictionary_draft` 
-set `dictionary`.`joy`= @joy, 
+set `dictionary_draft`.`joy`= @joy, 
 `dictionary_draft`.`trust` = @trust, 
 `dictionary_draft`.`fear`=@fear, 
 `dictionary_draft`.`surprise`=@surprise,
@@ -84,7 +101,8 @@ return (@id);
 END$$
 
 DROP FUNCTION IF EXISTS `addLexemeToDictionary`$$
-CREATE DEFINER=`root`@`localhost` FUNCTION `addLexemeToDictionary` (`_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_ignore` BOOLEAN, `_emotion` VARCHAR(250)) RETURNS BIGINT(20) UNSIGNED NO SQL
+CREATE DEFINER=`ea`@`localhost` FUNCTION `addLexemeToDictionary` (`_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_ignore` BOOLEAN, `_emotion` VARCHAR(250)) RETURNS BIGINT(20) UNSIGNED NO SQL
+    SQL SECURITY INVOKER
 BEGIN
 set @id = (select `dictionary`.`id` from `dictionary` where `dictionary`.`lang` like `_lang` and `dictionary`.`lexeme` like `_lexeme`);
 if `_emotion` IS NOT NULL THEN
@@ -117,6 +135,32 @@ where `dictionary`.`id` = @id;
 end if;
 return (@id);
 END$$
+
+DROP FUNCTION IF EXISTS `resetDraft`$$
+CREATE DEFINER=`ea`@`localhost` FUNCTION `resetDraft` (`_lexeme` VARCHAR(250), `_lang` VARCHAR(5), `_user` VARCHAR(250)) RETURNS BIGINT(20) NO SQL
+    SQL SECURITY INVOKER
+BEGIN
+set @id = (select `dictionary_draft`.`id` from `dictionary_draft` where `dictionary_draft`.`lang` like `_lang` and `dictionary_draft`.`lexeme` like `_lexeme` and `dictionary_draft`.`user` like `_user`);
+if @id is not null THEN
+update `dictionary_draft` set `dictionary_draft`.`stopword`=null where `dictionary_draft`.`id`=@id;
+return @id;
+else 
+return null;
+end if;
+end$$
+
+DROP FUNCTION IF EXISTS `resetLexeme`$$
+CREATE DEFINER=`ea`@`localhost` FUNCTION `resetLexeme` (`_lexeme` VARCHAR(250), `_lang` VARCHAR(5)) RETURNS BIGINT(20) NO SQL
+    SQL SECURITY INVOKER
+BEGIN
+set @id = (select `dictionary`.`id` from `dictionary` where `dictionary`.`lang` like `_lang` and `dictionary`.`lexeme` like `_lexeme`);
+if @id is not null THEN
+update `dictionary` set `dictionary`.`stopword`=null where `dictionary`.`id`=@id;
+return @id;
+else 
+return null;
+end if;
+end$$
 
 DELIMITER ;
 
@@ -160,7 +204,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (7, '2021-01-26 14:52:25', 'ru_RU', 'ГЛАДКИЙ АПРЕЛЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (8, '2021-01-26 14:52:25', 'ru_RU', 'ДЕНЬ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (9, '2021-01-26 14:52:25', 'ru_RU', 'СЕРЫЙ ПАМЯТНИК', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
-(10, '2021-01-26 14:52:25', 'ru_RU', 'ПРОСТОРНЫЙ КЛАДБИЩЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
+(10, '2021-01-26 14:52:25', 'ru_RU', 'ПРОСТОРНЫЙ КЛАДБИЩЕ', 0, 0, 0, 0.2, 0, 0, 0, 0, 0, '2021-02-01 07:45:18'),
 (11, '2021-01-26 14:52:25', 'ru_RU', 'УЕЗДНЫЙ ЕЩЕ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
 (12, '2021-01-26 14:52:25', 'ru_RU', 'ДАЛЁКИЙ', 0, 0, 0, 0.1, 0, 0.1, 0, 0, 0, '2021-01-29 06:51:22'),
 (13, '2021-01-26 14:52:25', 'ru_RU', 'ГОЛЫЙ ДЕРЕВО', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2021-01-26 14:52:25'),
@@ -495,7 +539,15 @@ CREATE TABLE IF NOT EXISTS `dictionary_draft` (
   `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `lexeme` (`lexeme`,`lang`,`user`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `dictionary_draft`
+--
+
+INSERT INTO `dictionary_draft` (`id`, `created`, `user`, `lang`, `lexeme`, `stopword`, `joy`, `trust`, `fear`, `surprise`, `sadness`, `disgust`, `anger`, `anticipation`, `changed`) VALUES
+(1, '2021-02-01 07:53:27', 'pavel', 'ru_RU', 'ХОЛОДНЫЙ ВЕТЕР', 0, 0, 0, 0.2, 0, 0, 0, 0, 0, '2021-02-01 11:58:06'),
+(2, '2021-02-01 08:08:41', 'pavel', 'ru_RU', 'ГОЛЫЙ ДЕРЕВО', 0, 0, 0, 0, 0, 0, 0.2, 0, 0, '2021-02-01 08:08:41');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

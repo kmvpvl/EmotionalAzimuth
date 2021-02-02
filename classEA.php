@@ -62,6 +62,17 @@ class EAUser {
         if (!in_array($rolename, $roles_arr)) throw new EAException("User ".$this->username." has no ".$rolename." role!");
         return true;
     }
+    function __get($name) {
+        switch ($name) {
+            case 'name':
+                return $this->username;
+                break;
+            
+            default:
+                # code...
+                break;
+        }
+    }
 }
 class EmotionalDictionary {
     protected $dblink;
@@ -105,6 +116,25 @@ class EmotionalDictionary {
         $this->dblink->next_result();
         return $z;
     }
+    function getUnassignedDraftLexemesTopN($_first_letters, $_lang, $_assigned, int $N = 10) {
+        global $user;
+        if (!is_null($user)) {
+            $user->hasRole("read");
+            $sql = "call getDraftDictionaryTopN('" . $user->name . "', '" . $_first_letters . "', '" . $_lang . "', " . ($_assigned? 1: 0) . ", " . $N . ")";
+            $x = $this->dblink->query($sql);
+            if ($this->dblink->errno) throw new EAException("Could not get draft lexemes from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error . " - sql: " . $sql);
+            if (!$x) throw new EAException("Could not get draft lexemes from dictionary: lexemes are absent");
+            $z = array();
+            while ($y = $x->fetch_assoc()) {
+                //var_dump($y);
+                $z[] = new EmotionalLexeme(null, null, $y);
+            };
+            $this->dblink->next_result();
+            return $z;
+        } else {
+            return null;
+        }
+    }
     function add(EmotionalLexeme $eL) {
         global $user;
         if (!is_null($user)) $user->hasRole("read") && $user->hasRole("save_dictionary");
@@ -114,8 +144,15 @@ class EmotionalDictionary {
     }
     function addDraft(EmotionalLexeme $eL) {
         global $user;
-        if (!is_null($user)) $user->hasRole("read") && $user->hasRole("save_draft");
+        if (!is_null($user)) {
+            $user->hasRole("read") && $user->hasRole("save_draft");
 
+	        $this->dblink->query("select addDraftLexemeToDictionary('" . $user->name . "', '" . $eL->normal . "', '" . $eL->lang . "', " . (is_null($eL->ignore) ? "null" : $eL->ignore) . ", " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ");");
+            if ($this->dblink->errno) throw new EAException("Could not create draft lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+            return $this->getDraftLexeme($eL->normal, $eL->lang);
+        } else {
+            throw new EAException("Could not get draft lexeme from dictionary: user is null");
+        }
     }
     function getLexeme($lexeme, $lang): ?EmotionalLexeme {
         global $user;
@@ -133,6 +170,27 @@ class EmotionalDictionary {
         if (!is_null($ev->length())) $el->emotion = $ev;
         $this->dblink->next_result();
         return $el;
+    }
+    function getDraftLexeme($lexeme, $lang): ?EmotionalLexeme {
+        global $user;
+        if (!is_null($user)) {
+            $user->hasRole("read");
+            $el = new EmotionalLexeme($lexeme, $lang);
+            $x = $this->dblink->query("call getDraftLexemeFromDictionary('". $user->name ."', '" . $el->normal . "', '" . $el->lang . "')");
+            if ($this->dblink->errno) throw new EAException("Could not get draft lexeme from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+            if (!$x) throw new EAException("Could not get draft lexeme from dictionary: lexeme is absent");
+            $y = $x->fetch_assoc();
+            if (!$y) throw new EAException("Could not get draft lexeme from dictionary: lexeme is absent");
+            //var_dump($y);
+            $el->ignore = $y["stopword"];
+            $ev = new EmotionalVector();
+            $ev->fillByArray($y);
+            if (!is_null($ev->length())) $el->emotion = $ev;
+            $this->dblink->next_result();
+            return $el;
+        } else {
+            return null;
+        }
     }
     function __get($name) {
         global $user;

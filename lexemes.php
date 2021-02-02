@@ -1,12 +1,23 @@
+<input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="saved" data-off="empty" data-onstyle="success" data-offstyle="danger" data-width="100">
+<input id="searchString" type="string" placeholder="Lexeme search..."/>
 <lexemes_list></lexemes_list>
 <script>
+$("#filterIgnore").bootstrapToggle();
+$("#filterIgnore").on('change', function(){
+	//debugger;
+	drawLexemes();
+});
+$("#searchString").on('input', function(){
+	drawLexemes();
+});
+
 function clearLexemesList(){
 	$('lexemes_list').html("");
 }
 var lexeme = new Object();
 function saveLexeme(lex) {
 	showLoading();
-	var p = $.post("apiAssignEmotionToLexeme.php", {
+	var p = $.post("apiAssignDraftEmotionToLexeme.php", {
 		username: $("#username").val(),
 		password: $("#password").val(),
 		language: $("#language").val(),
@@ -37,12 +48,15 @@ function saveLexeme(lex) {
 }
 function drawLexemes() {
 	showLoading();
+	//debugger;
 	var p = $.post("apiGetDictionary.php",
 	{
 		username: $("#username").val(),
 		password: $("#password").val(),
 		language: $("#language").val(),
 		timezone: $("#timezone").val(),
+		first_letters: $("#searchString").val(),
+		ignore: $("#filterIgnore").is(':checked')?1:0,
 		count: 10
 	},
 	function(data, status){
