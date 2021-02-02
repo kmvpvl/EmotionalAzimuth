@@ -29,7 +29,10 @@
 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
 	<ul class="navbar-nav mr-auto">
 		<li class="nav-item active">
-			<a class="nav-link" instance="lexemes.php" id="menuDictionary">Lexemes</a>
+			<a class="nav-link" instance="lexemes.php" id="menuDictionary">My Lexemes</a>
+		</li>
+		<li class="nav-item ">
+			<a class="nav-link" instance="editor.php" id="menuEditor">Approve</a>
 		</li>
 		<li class="nav-item" >
 			<a class="nav-link" instance="text.php" id="menuText">Text</a>

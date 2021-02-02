@@ -16,8 +16,10 @@ function getStat() {
                 ls = JSON.parse(data);
                 //debugger;
                 if ('OK'== ls.result) {
-                    $("statistics").html("Number of lexemes: " + ls.data.all_dict + "<br>Remain lexemes: " + ls.data.remain_dict);
-                }
+					$("statistics").html("Number of lexemes: " + ls.data.all_dict + "<br>Remain lexemes: " + ls.data.remain_dict + "<br>Drafts: " + ls.data.drafts);
+					
+					dc = JSON.parse(ls.data.drafts);
+				}
 				break;
 			default:
 				clearLexemesList();
