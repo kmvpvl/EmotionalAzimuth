@@ -1,4 +1,4 @@
-<input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="saved" data-off="empty" data-onstyle="success" data-offstyle="danger" data-width="100">
+<input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="evaluated" data-off="not eval" data-onstyle="success" data-offstyle="danger" data-width="140">
 <input id="searchString" type="string" placeholder="Lexeme search..."/>
 <lexemes_list></lexemes_list>
 <script>
