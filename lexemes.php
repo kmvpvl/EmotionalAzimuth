@@ -3,6 +3,8 @@
 <lexemes_list></lexemes_list>
 <script>
 $("#filterIgnore").bootstrapToggle();
+$("#dlgModalEditLexemeEmotionIgnoreOnOff").bootstrapToggle();
+$("#dlgModalEditLexemeEmotionIgnoreStopword").bootstrapToggle();
 $("#filterIgnore").on('change', function(){
 	//debugger;
 	drawLexemes();
@@ -71,10 +73,12 @@ function drawLexemes() {
                         $("lexemes_list").append(drawLexeme(item));
                     });
 					$('lexeme').on ('click', function(event) {
+						//debugger;
 						//alert(event.currentTarget.attributes['lexeme_id'].nodeValue);
 						lexeme.id = event.currentTarget.attributes['lexeme_id'].nodeValue;
 						lexeme.lexeme = $('lexeme[lexeme_id='+lexeme.id+'] > normal').text();
 						lexeme.lang = $('lexeme[lexeme_id='+lexeme.id+'] > lang').text();
+						//debugger;
 						lexeme.stopword = $('lexeme[lexeme_id='+lexeme.id+'] > ignore').text();
 						lexeme.emotion = JSON.parse($('lexeme[lexeme_id='+lexeme.id+'] > emotion').text());
 						$('#dlgModalEditLexemeTitle').text(lexeme.lexeme);
@@ -94,13 +98,13 @@ function drawLexemes() {
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('disable');
 								break;
 						
-							case 0:
+							case '0':
 								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('off');
 								break;
 
-							case 1:
+							case '1':
 								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('off');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('on');

@@ -69,6 +69,9 @@ lexeme.hover {
 lexeme > lang {
   display: none;
 }
+lexeme > ignore {
+  display: none;
+}
 lexeme > emotion {
   display: none;
 }

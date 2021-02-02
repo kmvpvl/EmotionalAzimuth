@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Feb 02, 2021 at 05:13 AM
+-- Generation Time: Feb 02, 2021 at 08:00 AM
 -- Server version: 10.5.8-MariaDB
 -- PHP Version: 7.4.13
 
@@ -30,11 +30,13 @@ DELIMITER $$
 DROP PROCEDURE IF EXISTS `getDraftDictionaryTopN`$$
 CREATE DEFINER=`ea`@`localhost` PROCEDURE `getDraftDictionaryTopN` (IN `_user` VARCHAR(250), IN `_lexeme_first_letters` VARCHAR(250), IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN, IN `N` INT)  NO SQL
     SQL SECURITY INVOKER
-select `dictionary`.`lexeme`, `dictionary`.`lang`, `dictionary_draft`.`user`, `dictionary_draft`.`stopword`, `dictionary_draft`.`joy`, `dictionary_draft`.`trust`, `dictionary_draft`.`fear`, `dictionary_draft`.`surprise`, `dictionary_draft`.`sadness`, `dictionary_draft`.`disgust`, `dictionary_draft`.`anger`, `dictionary_draft`.`anticipation`
+select `dictionary`.`id`, `dictionary`.`lexeme`, `dictionary`.`lang`, `draft`.`user`, `draft`.`stopword`, `draft`.`joy`, `draft`.`trust`, `draft`.`fear`, `draft`.`surprise`, `draft`.`sadness`, `draft`.`disgust`, `draft`.`anger`, `draft`.`anticipation`
 from `dictionary` 
-left join `dictionary_draft` on `dictionary`.`lexeme` like `dictionary_draft`.`lexeme` and `dictionary`.`lang` like `dictionary_draft`.`lang`
-where if (`dictionary_draft`.`stopword` is null, 0, 1) = `_assigned` and `dictionary`.`lang` like `_lang` and (`dictionary`.`lexeme` like concat(`_lexeme_first_letters`, '%') or `dictionary`.`lexeme` like concat('% ', `_lexeme_first_letters`, '%'))
-and (`dictionary_draft`.`user` is null or `dictionary_draft`.`user` like `_user`)
+left join (select * from `dictionary_draft` where `dictionary_draft`.`user` = `_user`) as `draft`
+
+on `dictionary`.`lexeme` = `draft`.`lexeme` and `dictionary`.`lang` = `draft`.`lang`
+where if (`draft`.`stopword` is null, 0, 1) = `_assigned` and `dictionary`.`lang` like `_lang` and (`dictionary`.`lexeme` like concat(`_lexeme_first_letters`, '%') or `dictionary`.`lexeme` like concat('% ', `_lexeme_first_letters`, '%'))
+
 LIMIT `N`$$
 
 DROP PROCEDURE IF EXISTS `getDraftLexemeFromDictionary`$$
@@ -539,7 +541,7 @@ CREATE TABLE IF NOT EXISTS `dictionary_draft` (
   `changed` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `lexeme` (`lexeme`,`lang`,`user`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `dictionary_draft`
@@ -547,7 +549,8 @@ CREATE TABLE IF NOT EXISTS `dictionary_draft` (
 
 INSERT INTO `dictionary_draft` (`id`, `created`, `user`, `lang`, `lexeme`, `stopword`, `joy`, `trust`, `fear`, `surprise`, `sadness`, `disgust`, `anger`, `anticipation`, `changed`) VALUES
 (1, '2021-02-01 07:53:27', 'pavel', 'ru_RU', 'ХОЛОДНЫЙ ВЕТЕР', 0, 0, 0, 0.2, 0, 0, 0, 0, 0, '2021-02-01 11:58:06'),
-(2, '2021-02-01 08:08:41', 'pavel', 'ru_RU', 'ГОЛЫЙ ДЕРЕВО', 0, 0, 0, 0, 0, 0, 0.2, 0, 0, '2021-02-01 08:08:41');
+(2, '2021-02-01 08:08:41', 'pavel', 'ru_RU', 'ГОЛЫЙ ДЕРЕВО', 0, 0, 0, 0, 0, 0, 0.2, 0, 0, '2021-02-01 08:08:41'),
+(3, '2021-02-02 07:42:04', 'pavel', 'ru_RU', 'АККУРАТНЫЙ МОЛОЧНАЯ', 0, 0, 0.2, 0, 0, 0, 0, 0, 0, '2021-02-02 07:42:04');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
