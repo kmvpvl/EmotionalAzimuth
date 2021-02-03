@@ -88,7 +88,7 @@ function drawLexemes() {
 						emotions.forEach(function (item, index) {
                         	$("[modal_emotion='"+item+"']").val(lexeme.emotion[item]?lexeme.emotion[item]:0);
 						});
-						$('[modal_emotion]').change (function(event) {
+						$('[modal_emotion]').on ('input', function(event) {
 							axis = event.currentTarget.attributes['modal_emotion'].nodeValue;
 							lexeme.emotion[axis] = $("[modal_emotion='"+axis+"']").val();
 							$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
@@ -171,55 +171,23 @@ function drawEmotion (emotion) {
 
 </script>
 <div class="modal fade" id="dlgModalEditLexeme" tabindex="-1" role="dialog" aria-labelledby="dlgModalLongTitle" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="dlgModalEditLexemeTitle">Modal title</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-		  <flower id="dlgModalEditLexemeFlower">
-
-		  </flower>
-		  <input id="dlgModalEditLexemeEmotionIgnoreOnOff" type="checkbox" checked data-toggle="toggle" data-on="on" data-off="off" data-onstyle="success" data-offstyle="danger" data-width="100">
-		  <input id="dlgModalEditLexemeEmotionIgnoreStopword" type="checkbox" checked data-toggle="toggle" data-on="ignore" data-off="include" data-onstyle="danger" data-offstyle="success" data-width="100">
-		  <span class="container-fluid">
-			<div class="row">
-				<div class="col-sm-3 joy">joy радость
-				<input class="joy" modal_emotion="joy" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 trust">trust доверие
-				<input class="trust" modal_emotion="trust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 fear">fear страх
-				<input class="fear" modal_emotion="fear" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 surprise">surprise удивление
-				<input class="surprise" modal_emotion="surprise" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="dlgModalEditLexemeTitle">Modal title</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
 			</div>
-			<div class="row">
-				<div class="col-sm-3 sadness">sadness печаль
-				<input class="sadness" modal_emotion="sadness" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 disgust">disgust отвращение
-				<input class="disgust" modal_emotion="disgust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 anger">anger злость
-				<input class="anger" modal_emotion="anger" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 anticipation">anticipation ожидание
-				<input class="anticipation" modal_emotion="anticipation" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
+			<div class="modal-body container">
+<?php
+include ('editFlower.php');
+?>
 			</div>
-		</span>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <button type="button" dlg-button="btn-dlgModal-ok" class="btn btn-primary">Save</button>
-      </div>
-    </div>
-  </div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				<button type="button" dlg-button="btn-dlgModal-ok" class="btn btn-primary">Save</button>
+			</div>
+		</div>
+	</div>
 </div>

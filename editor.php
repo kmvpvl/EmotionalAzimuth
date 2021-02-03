@@ -1,7 +1,7 @@
 <input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="evaluated" data-off="not eval" data-onstyle="success" data-offstyle="danger" data-width="140">
 <input id="searchString" type="string" placeholder="Lexeme search..."/>
 DraftsCount (количество оценок)
-<input id="filterDraftCount" type="number" value="1" data-decimals="2" min="1" step="1"/>
+<input id="filterDraftCount" type="number" value="1" data-decimals="2" min="1" step="1" data-width="20"/>
 <lexemes_list></lexemes_list>
 <script>
 var drafts;
@@ -59,7 +59,7 @@ function showLexemeModal() {
 	emotions.forEach(function (item, index) {
 		$("[modal_emotion='"+item+"']").val(lexeme.emotion[item]?lexeme.emotion[item]:0);
 	});
-	$('[modal_emotion]').change (function(event) {
+	$('[modal_emotion]').on ('input', function(event) {
 		axis = event.currentTarget.attributes['modal_emotion'].nodeValue;
 		lexeme.emotion[axis] = $("[modal_emotion='"+axis+"']").val();
 		$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
@@ -194,44 +194,12 @@ function drawEmotion (emotion) {
         </button>
       </div>
       <div class="modal-body">
-		  <flower id="dlgModalEditLexemeFlower">
+<?php
+include ('editFlower.php');
+?>
+		<flowers>
 
-		  </flower>
-		  <input id="dlgModalEditLexemeEmotionIgnoreOnOff" type="checkbox" checked data-toggle="toggle" data-on="on" data-off="off" data-onstyle="success" data-offstyle="danger" data-width="100">
-		  <input id="dlgModalEditLexemeEmotionIgnoreStopword" type="checkbox" checked data-toggle="toggle" data-on="ignore" data-off="include" data-onstyle="danger" data-offstyle="success" data-width="100">
-		  <span class="container-fluid">
-			<div class="row">
-				<div class="col-sm-3 joy">joy радость
-				<input class="joy" modal_emotion="joy" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 trust">trust доверие
-				<input class="trust" modal_emotion="trust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 fear">fear страх
-				<input class="fear" modal_emotion="fear" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 surprise">surprise удивление
-				<input class="surprise" modal_emotion="surprise" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-sm-3 sadness">sadness печаль
-				<input class="sadness" modal_emotion="sadness" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 disgust">disgust отвращение
-				<input class="disgust" modal_emotion="disgust" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 anger">anger злость
-				<input class="anger" modal_emotion="anger" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-				<div class="col-sm-3 anticipation">anticipation ожидание
-				<input class="anticipation" modal_emotion="anticipation" type="number" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
-				</div>
-			</div>
-			<flowers>
-
-			</flowers>
-		</span>
+		</flowers>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>

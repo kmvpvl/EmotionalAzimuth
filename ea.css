@@ -94,3 +94,6 @@ lexeme > emotion {
 emotional_text {
   display: block;
 }
+input.slider {
+  width:100%;
+}
