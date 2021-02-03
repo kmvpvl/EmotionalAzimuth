@@ -106,7 +106,7 @@ function drawLexemes() {
 								break;
 
 							case '1':
-								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('off');
+								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('on');
 								break;
