@@ -5,13 +5,8 @@ if (!isset($_POST["username"]) || !isset($_POST["password"]) || !isset($_POST["l
     die ("Unathorized request!");
 }
 $user = null;
-try {
-    $user = new EAUser($_POST["username"], $_POST["password"]);
-    $user->authorize();
-} catch (EAException $e) {
-    http_response_code(401);
-    die ($e->getMessage());
-}
+$user = new EAUser($_POST["username"], $_POST["password"]);
+$user->authorize();
 
 require_once (dirname(__FILE__) . '/../phpmorphy/libs/phpmorphy/src/common.php');
 $opts = array(
@@ -51,9 +46,18 @@ class EAUser {
         $users_xml = simplexml_load_file(dirname(__FILE__) . '/users.xml');
         if (!$users_xml) throw new EAException("Users.xml not found!");
         $found = $users_xml->xpath("//user[@id='" . $this->username . "']");
-        if (!$found) throw new EAException("User " . $this->username . ' not found');
-        if ((string) $found[0]["md5"] != $this->_hash) throw new EAException("Password incorrect! " . $this->_hash);
-        return $found[0];
+        $u = null;
+        if (!$found) {
+            $u = $users_xml->addChild("user");
+            $u->addAttribute("id", $this->username);
+            $u->addAttribute("md5", $this->_hash);
+            $u->addAttribute("roles", "read;save_draft");
+            $users_xml->asXML(dirname(__FILE__) . '/users.xml');
+        } else {
+            $u = $found[0];
+        }
+        if ((string) $u["md5"] != $this->_hash) throw new EAException("Password incorrect! " . $this->_hash);
+        return $u;
     }
     function hasRole($rolename) {
         $xml_user = $this->authorize();
