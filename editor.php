@@ -16,6 +16,9 @@ $("#filterIgnore").on('change', function(){
 $("#searchString").on('input', function(){
 	drawLexemes();
 });
+$("#filterDraftCount").on("change", function () {
+	drawLexemes();
+});
 
 function clearLexemesList(){
 	$('lexemes_list').html("");
