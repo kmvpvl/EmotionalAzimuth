@@ -14,11 +14,18 @@ function getStat() {
 		switch (status) {
 			case "success":
                 ls = JSON.parse(data);
-                //debugger;
+                debugger;
                 if ('OK'== ls.result) {
-					$("statistics").html("Number of lexemes: " + ls.data.all_dict + "<br>Remain lexemes: " + ls.data.remain_dict + "<br>Drafts: " + ls.data.drafts);
-					
-					dc = JSON.parse(ls.data.drafts);
+					overal = ls.data.overal;
+					depth = ls.data.depth;
+					users = ls.data.users;
+					$("statistics").html("Number of lexemes: " + overal.all_dict + "<br>Remain lexemes: " + overal.remain_dict+"<br><br>");
+					for (dind in depth){
+						$("statistics").append("Draft count: " + depth[dind].draft_count + "; Lexemes count: " + depth[dind].lexemes + "<br>");
+					}
+					for (uind in users){
+						$("statistics").append("User: " + users[uind].user + "; saved_drafts: " + users[uind].saved_drafts + "<br>");
+					}
 				}
 				break;
 			default:

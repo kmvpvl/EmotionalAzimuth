@@ -227,9 +227,21 @@ class EmotionalDictionary {
                 $x = $this->dblink->query("call getStatistics()");
                 if ($this->dblink->errno) throw new EAException("Could not get statistics: " . $this->dblink->errno . " - " . $this->dblink->error);
                 if (!$x) throw new EAException("Could not get statistics");
-                $y = $x->fetch_assoc();
-                if (!$y) throw new EAException("Could not get statistics");
-                return $y;
+                $a = $x->fetch_assoc();
+                if (!$a) throw new EAException("Could not get statistics");
+                $this->dblink->next_result();
+                $x = $this->dblink->use_result();
+                $depth = array();
+                while ($y = $x->fetch_assoc()) {
+                    $depth[] = $y;
+                }
+                $this->dblink->next_result();
+                $x = $this->dblink->use_result();
+                $users = array();
+                while ($y = $x->fetch_assoc()) {
+                    $users[] = $y;
+                }
+                return ["overal"=>$a, "depth"=>$depth, "users"=>$users];
             break;
             default:
                 throw new Exception("Unknown property: '".$name."'");
