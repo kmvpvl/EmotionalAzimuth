@@ -4,7 +4,7 @@ DraftsCount (количество оценок)
 <input id="filterDraftCount" type="number" value="1" data-decimals="2" min="1" step="1" data-width="20"/>
 <lexemes_list></lexemes_list>
 <script>
-var drafts;
+var drafts = Object();
 
 $("#filterIgnore").bootstrapToggle();
 $("#dlgModalEditLexemeEmotionIgnoreOnOff").bootstrapToggle();
@@ -25,6 +25,7 @@ function clearLexemesList(){
 }
 var lexeme = new Object();
 function saveLexeme(lex) {
+	//debugger;
 	showLoading();
 	var p = $.post("apiAssignEmotionToLexeme.php", {
 		username: $("#username").val(),
@@ -46,7 +47,6 @@ function saveLexeme(lex) {
 	p.fail(function(data, status) {
 		hideLoading();
 		switch (data.status) {
-			case 400:
 			case 401:
 				showLoginForm();
 				break;
@@ -56,6 +56,7 @@ function saveLexeme(lex) {
 	})
 }
 function showLexemeModal() {
+	//debugger;
 	$('#dlgModalEditLexemeTitle').text(lexeme.lexeme);
 	$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
 	$('[modal_emotion]').val(0);
@@ -80,7 +81,7 @@ function showLexemeModal() {
 			break;
 
 		case '1':
-			$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('off');
+			$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
 			$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
 			$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('on');
 			break;
@@ -99,8 +100,28 @@ function showLexemeModal() {
 	$("flowers").html("");
 	if (drafts[lexeme.id]) {
 		for (const [ind, itm] of Object.entries(drafts[lexeme.id])) {
-			$("flowers").append("<span>" + ind + drawFlower(itm.emotion) + "</span>");
+			$("flowers").append("<span>" + drawFlower(itm.emotion, 30) + "<draft>" + ind + "</draft></span>");
 		}
+		$("draft").on('click', function(){
+			//debugger;
+			$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
+			$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
+			idt = lexeme.id;
+			Object.assign(lexeme, drafts[lexeme.id][$(this).text()]);
+			lexeme.id = idt;
+			$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
+			//debugger;
+			switch (lexeme.stopword) {
+				case "0":
+				case 0:
+					$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('off');
+					break;
+				case "1":
+				case 1:
+					$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('on');
+					break;
+			}
+		});
 	}
 	$("#dlgModalEditLexeme").modal('show');
 }
@@ -115,7 +136,7 @@ function drawLexemes() {
 		language: $("#language").val(),
 		timezone: $("#timezone").val(),
 		first_letters: $("#searchString").val(),
-		ignore: $("#filterIgnore").is(':checked')?1:0,
+		stopword: $("#filterIgnore").is(':checked')?1:0,
 		draft_count: $("#filterDraftCount").val(),
 		count: 10
 	},
@@ -131,12 +152,12 @@ function drawLexemes() {
                         $("lexemes_list").append(drawLexeme(item));
 					};
 					drafts = ls.data.drafts;
-					$("lexeme > ignore:contains('1')").parent().addClass('stopword');
+					$("lexeme > stopword:contains('1')").parent().addClass('stopword');
 					$('lexeme').on ('click', function(event) {
 						lexeme.id = event.currentTarget.attributes['lexeme_id'].nodeValue;
 						lexeme.lexeme = $('lexeme[lexeme_id='+lexeme.id+'] > normal').text();
 						lexeme.lang = $('lexeme[lexeme_id='+lexeme.id+'] > lang').text();
-						lexeme.stopword = $('lexeme[lexeme_id='+lexeme.id+'] > ignore').text();
+						lexeme.stopword = $('lexeme[lexeme_id='+lexeme.id+'] > stopword').text();
 						lexeme.emotion = JSON.parse($('lexeme[lexeme_id='+lexeme.id+'] > emotion').text());
 						showLexemeModal();
 					});

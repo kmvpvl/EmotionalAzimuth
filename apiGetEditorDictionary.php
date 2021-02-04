@@ -5,7 +5,7 @@ try {
     $res = '"OK"';
     $res .= ', "data" : ';
     if ($eDict) {
-        $u = $eDict->getLexemesTopN($_POST["first_letters"], $lang, $_POST["ignore"], $_POST["draft_count"]);
+        $u = $eDict->getLexemesTopN($_POST["first_letters"], $lang, $_POST["stopword"], $_POST["draft_count"]);
         $d = array();
         foreach ($u as $lex) {
             $d[$lex->id] = $eDict->getAllDrafts($lex->normal, $lex->lang);

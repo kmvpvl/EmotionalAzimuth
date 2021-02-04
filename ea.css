@@ -72,7 +72,7 @@ lexeme.hover {
 lexeme > lang {
   display: none;
 }
-lexeme > ignore {
+lexeme > stopword {
   display: none;
 }
 lexeme > emotion {

@@ -30,7 +30,7 @@ function drawLexeme(lex) {
     s += "<flower>"+drawFlower(lex.emotion)+"</flower>";
     s += "<normal>" + lex.lexeme + "</normal>";
     s += "<lang>" + lex.lang + "</lang>";
-    s += "<ignore>" + (lex.ignore?lex.ignore:"") + "</ignore>";
+    s += "<stopword>" + (lex.stopword?lex.stopword:"") + "</stopword>";
 	s += "<emotion>" + drawEmotion(lex.emotion) + "</emotion>";
     s += "</lexeme>";
     return s;
