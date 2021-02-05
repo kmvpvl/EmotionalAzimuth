@@ -173,24 +173,31 @@ function tryLogin() {
 <div id="loadingSpinner" class="spinner-border"></div>
 <div id="loginform">
 	<div class="container">
+	<div class="form-group">
 		<label for="username">User name</label>
 		<input type="text" placeholder="Enter Username" id="username" name="username" required value="">
+	</div>
+	<div class="form-group">
 		<label for="password">Password</label>
 		<input type="password" placeholder="Enter Password" id="password" required value=""></input>
+	</div>
+	<div class="form-group">
 		<label for="timezone">Timezone</label>
 		<input id="timezone" type="number" min="-12" max="12" class="digit" value="3"></input>
 		<label for="language">Language</label>
 		<select id="language" type="select"><option value="en" default="default">EN</option><option value="ru">RU</option></select>
-		
+	</div>
+	<div class="form-group">		
 		<button id="submitLogin">Login</button>
 		<label>
 		<input type="checkbox" checked="checked" name="remember"> Remember me</input>
 		</label>
-	</div>
-	
-	<div class="container" style="background-color:#f1f1f1">
+		<div class="container" style="background-color:#f1f1f1">
 		<span class="psw">Forgot <a href="">password?</a></span>
 	</div>
+	</div>
+	</div>
+	
 </div>
 </body>
 </html>
