@@ -97,3 +97,6 @@ emotional_text {
 input.slider {
   width:100%;
 }
+draft {
+  cursor: pointer;
+}

@@ -14,7 +14,7 @@ function getStat() {
 		switch (status) {
 			case "success":
                 ls = JSON.parse(data);
-                debugger;
+                //debugger;
                 if ('OK'== ls.result) {
 					overal = ls.data.overal;
 					depth = ls.data.depth;
