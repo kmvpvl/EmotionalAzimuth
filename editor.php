@@ -121,6 +121,9 @@ function showLexemeModal() {
 					$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('on');
 					break;
 			}
+			for (var axis in lexeme.emotion) {
+				$("[modal_emotion='"+axis+"']").val(lexeme.emotion[axis]);
+			}
 		});
 	}
 	$("#dlgModalEditLexeme").modal('show');
