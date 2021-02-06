@@ -142,7 +142,9 @@ class EmotionalDictionary {
     function add(EmotionalLexeme $eL) {
         global $user;
         if (!is_null($user)) $user->hasRole("read") && $user->hasRole("save_dictionary");
-	    $this->dblink->query("select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', " . (is_null($eL->stopword) ? "null" : $eL->stopword) . ", " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ");");
+        $sql = "select addLexemeToDictionary('" . $eL->normal . "', '" . $eL->lang . "', " . (is_null($eL->stopword) ? "null" : $eL->stopword) . ", " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ");";
+        //echo $sql;
+	    $this->dblink->query($sql);
         if ($this->dblink->errno) throw new EAException("Could not create lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
         return $this->getLexeme($eL->normal, $eL->lang);
     }
@@ -156,6 +158,27 @@ class EmotionalDictionary {
             return $this->getDraftLexeme($eL->normal, $eL->lang);
         } else {
             throw new EAException("Could not get draft lexeme from dictionary: user is null");
+        }
+    }
+    function offLexeme(EmotionalLexeme $eL) {
+        global $user;
+        if (!is_null($user)) $user->hasRole("read") && $user->hasRole("save_dictionary");
+        $sql = "select offLexeme('" . $eL->normal . "', '" . $eL->lang . "');";
+        //echo $sql;
+	    $this->dblink->query($sql);
+        if ($this->dblink->errno) throw new EAException("Could not off lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+        return $this->getLexeme($eL->normal, $eL->lang);
+    }
+    function offDraft(EmotionalLexeme $eL) {
+        global $user;
+        if (!is_null($user)) {
+            $user->hasRole("read") && $user->hasRole("save_draft");
+
+	        $this->dblink->query("select offDraftLexeme('" . $user->name . "', '" . $eL->normal . "', '" . $eL->lang . "');");
+            if ($this->dblink->errno) throw new EAException("Could not off draft lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+            return $this->getDraftLexeme($eL->normal, $eL->lang);
+        } else {
+            throw new EAException("Could not off draft lexeme from dictionary: user is null");
         }
     }
     function getLexeme($lexeme, $lang): ?EmotionalLexeme {
@@ -423,7 +446,7 @@ class EmotionalLexeme implements JsonSerializable {
             $this->src = $arr["lexeme"];
             //var_dump($this->src);
             $this->lang = $arr["lang"];
-            $this->stopword = $arr["stopword"];
+            $this->stopword = ("" == $arr["stopword"]?null:$arr["stopword"]);
             $ev = new EmotionalVector();
             $ev->fillByArray($arr);
             //var_dump($ev);

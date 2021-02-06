@@ -8,8 +8,11 @@ try {
     $el = new EmotionalLexeme(null, null, $arr);
     //var_dump($el);
     if ($eDict) {
-        $eDict = new EmotionalDictionary();
-        $eDict->addDraft($el);
+        if (!is_null($el->stopword)) {
+            $eDict->addDraft($el);
+        } else {
+            $eDict->offDraft($el);
+        }
     }
 } catch (EAException | phpMorphy_Exception | Exception $e) {
 	http_response_code(400);

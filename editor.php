@@ -91,10 +91,10 @@ function showLexemeModal() {
 	}
 	$('#dlgModalEditLexemeEmotionIgnoreOnOff').change(function() {
 		$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle($(this).prop('checked')?'enable':'disable'); 
-		lexeme.stopword = $(this).prop('checked')?($('#dlgModalEditLexemeEmotionIgnoreStopword').prop('checked')?1:0):'';
+		lexeme.stopword = $(this).prop('checked')?($('#dlgModalEditLexemeEmotionIgnoreStopword').prop('checked')?1:0):null;
 	});
 	$('#dlgModalEditLexemeEmotionIgnoreStopword').change(function() {
-		lexeme.stopword = $('#dlgModalEditLexemeEmotionIgnoreOnOff').prop('checked')?($('#dlgModalEditLexemeEmotionIgnoreStopword').prop('checked')?1:0):'';
+		lexeme.stopword = $('#dlgModalEditLexemeEmotionIgnoreOnOff').prop('checked')?($('#dlgModalEditLexemeEmotionIgnoreStopword').prop('checked')?1:0):null;
 	});
 	//debugger;
 	$("flowers").html("");
