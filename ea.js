@@ -35,3 +35,22 @@ function drawLexeme(lex) {
     s += "</lexeme>";
     return s;
 }
+function drawTOC(toc, height) {
+	count = 0;
+	for (item in toc) {
+		count += parseInt(toc[item].tbl);
+	}
+	s = "";
+	//debugger;
+	k = height / count;
+	i = 0;
+	prev = -21;
+	for (item in toc) {
+		if (i * k - prev > 20) {
+			s += "<toc style='top:" + i * k + "px;'>" + toc[item].cntnt + "</toc>";
+			prev = i*k;
+		}
+		i += parseInt(toc[item].tbl);
+	}
+	return s;
+}

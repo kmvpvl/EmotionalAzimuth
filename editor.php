@@ -149,7 +149,7 @@ function drawLexemes() {
 			case "success":
 			    ls = JSON.parse(data);
                 if ('OK' == ls.result) {
-					//debugger;
+					debugger;
 					clearLexemesList();
 					for (const [index, item] of Object.entries(ls.data.lexemes)) {
                         $("lexemes_list").append(drawLexeme(item));

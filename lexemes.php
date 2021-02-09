@@ -1,6 +1,7 @@
 <input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="evaluated" data-off="not eval" data-onstyle="success" data-offstyle="danger" data-width="140">
 <input id="searchString" type="string" placeholder="Lexeme search..."/>
 <lexemes_list></lexemes_list>
+<seek>1</seek>
 <script>
 $("#filterIgnore").bootstrapToggle();
 $("#dlgModalEditLexemeEmotionIgnoreOnOff").bootstrapToggle();
@@ -12,6 +13,14 @@ $("#filterIgnore").on('change', function(){
 $("#searchString").on('input', function(){
 	drawLexemes();
 });
+$(window).resize(resizeLexemes());
+
+function resizeLexemes() {
+	$("lexemes_list").outerWidth($("seek").position().left - $("lexemes_list").position().left);
+	$("lexemes_list").outerHeight($("instance").innerHeight() - $("lexemes_list").position().top);
+	//debugger;
+	$("seek").outerHeight($("instance").innerHeight() - $("seek").position().top);
+}
 
 function clearLexemesList(){
 	$('lexemes_list').html("");
@@ -69,9 +78,11 @@ function drawLexemes() {
 			    ls = JSON.parse(data);
                 if ('OK' == ls.result) {
 					clearLexemesList();
-                    ls.data.forEach(function (item, index) {
+                    ls.data.lexemes.forEach(function (item, index) {
                         $("lexemes_list").append(drawLexeme(item));
 					});
+					//debugger;
+					$("seek").html(drawTOC(ls.data.toc, $("seek").innerHeight()));
 					$("lexeme > stopword:contains('1')").parent().addClass('stopword');
 					$('lexeme').on ('click', function(event) {
 						//debugger;

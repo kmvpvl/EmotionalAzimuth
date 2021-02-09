@@ -100,3 +100,31 @@ input.slider {
 draft {
   cursor: pointer;
 }
+lexemes_list {
+  float: left;
+  position: relative;
+  /*border: solid 2px green;*/
+  padding: 5px;
+  margin: 0px;
+  padding-left: 2;
+  padding-right: 2;
+  width: auto;
+  overflow-y: auto;
+  display: block;
+}
+seek {
+  float: right;
+  position: relative;
+  display: block;
+  /*border: solid 2px green;*/
+  width: 30px;
+  border-left: double 1px gray;
+}
+toc {
+  display: block;
+  cursor: pointer;
+  position: absolute;
+  color: gray;
+  padding: 2px;
+  font-size: 70%;
+}
