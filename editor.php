@@ -1,8 +1,10 @@
-<input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="evaluated" data-off="not eval" data-onstyle="success" data-offstyle="danger" data-width="140">
+<input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="evaluated" data-off="not eval" data-onstyle="success" data-offstyle="danger" data-width="100">
 <input id="searchString" type="string" placeholder="Lexeme search..."/>
 DraftsCount (количество оценок)
 <input id="filterDraftCount" type="number" value="1" data-decimals="2" min="1" step="1" data-width="20"/>
+<input id="searchTOC" style="display:none;"/>
 <lexemes_list></lexemes_list>
+<seek></seek>
 <script>
 var drafts = Object();
 
@@ -10,15 +12,29 @@ $("#filterIgnore").bootstrapToggle();
 $("#dlgModalEditLexemeEmotionIgnoreOnOff").bootstrapToggle();
 $("#dlgModalEditLexemeEmotionIgnoreStopword").bootstrapToggle();
 $("#filterIgnore").on('change', function(){
-	//debugger;
+	$("#searchTOC").val("");
 	drawLexemes();
 });
 $("#searchString").on('input', function(){
+	$("#searchTOC").val("");
 	drawLexemes();
 });
+$("#searchTOC").on('input', function(){
+	$("#searchString").val("");
+	drawLexemes();
+});
+
 $("#filterDraftCount").on("change", function () {
 	drawLexemes();
 });
+
+$(window).resize(resizeLexemes());
+
+function resizeLexemes() {
+	$("lexemes_list").outerWidth($("seek").position().left - $("lexemes_list").position().left);
+	$("lexemes_list").outerHeight($("instance").innerHeight() - $("lexemes_list").position().top);
+	$("seek").outerHeight($("instance").innerHeight() - $("seek").position().top);
+}
 
 function clearLexemesList(){
 	$('lexemes_list').html("");
@@ -139,6 +155,7 @@ function drawLexemes() {
 		language: $("#language").val(),
 		timezone: $("#timezone").val(),
 		first_letters: $("#searchString").val(),
+		toc: $("#searchTOC").val(),
 		stopword: $("#filterIgnore").is(':checked')?1:0,
 		draft_count: $("#filterDraftCount").val(),
 		count: 10
@@ -149,11 +166,20 @@ function drawLexemes() {
 			case "success":
 			    ls = JSON.parse(data);
                 if ('OK' == ls.result) {
-					debugger;
+					//debugger;
 					clearLexemesList();
-					for (const [index, item] of Object.entries(ls.data.lexemes)) {
-                        $("lexemes_list").append(drawLexeme(item));
+					for (index in ls.data.lexemes) {
+                        $("lexemes_list").append(drawLexeme(ls.data.lexemes[index]));
 					};
+					$("seek").html(drawTOC(ls.data.toc, $("seek").innerHeight()));
+					$("toc").removeClass('active');
+					if ($("#searchTOC").val()) $("toc:contains('" + $("#searchTOC").val() + "')").addClass("active");
+					$("toc").on('click', function () {
+						$("#searchString").val("");
+						$("#searchTOC").val($(this).text());
+						$("lexemes_list").scrollTop(0);
+						$("#searchTOC").trigger("input");
+					});
 					drafts = ls.data.drafts;
 					$("lexeme > stopword:contains('1')").parent().addClass('stopword');
 					$('lexeme').on ('click', function(event) {
@@ -193,7 +219,7 @@ $(document).ready (function () {
 	$('[dlg-button="btn-dlgModal-ok"]').on('click', function () {
 		saveLexeme(lexeme);
 		$("#dlgModalEditLexeme").modal('hide');
-		drawLexemes();
+		//drawLexemes();
 	});
 })
 

@@ -106,24 +106,24 @@ class EmotionalDictionary {
     function __destruct() {
 		$this->dblink->close();
     }
-    function getLexemesTopN(string $first_letters, string $lang, bool $stopword, int $draft_count, int $N = 100) {
+    function getLexemesTopN(string $first_letters, $toc, string $lang, bool $stopword, int $draft_count, int $N = 100) {
         global $user;
         if (!is_null($user)) $user->hasRole("editor");
-	    $x = $this->dblink->query("call getDictionaryTopN('" . $first_letters . "', '" . $lang . "', " . ($stopword?1:0) . ", " . $draft_count . ", " . $N . ")");
+	    $x = $this->dblink->query("call getDictionaryTopN('" . $first_letters . "', '" . $toc . "', '" . $lang . "', " . ($stopword?1:0) . ", " . $draft_count . ", " . $N . ")");
         if ($this->dblink->errno) throw new EAException("Could not get lexemes from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
         if (!$x) throw new EAException("Could not get lexemes from dictionary: lexemes are absent");
         $z = array();
         while ($y = $x->fetch_assoc()) {
             //var_dump($y);
-            $z[$y["id"]] = new EmotionalLexeme(null, null, $y);
+            $z[] = new EmotionalLexeme(null, null, $y);
         };
         $this->dblink->next_result();
         return $z;
     }
-    function getDictionaryTOC(string $first_letters, string $lang, bool $stopword, int $draft_count) {
+    function getDictionaryTOC(string $lang, bool $stopword, int $draft_count) {
         global $user;
         if (!is_null($user)) $user->hasRole("editor");
-	    $x = $this->dblink->query("call getDictionaryTOC('" . $first_letters . "', '" . $lang . "', " . ($stopword?1:0) . ", " . $draft_count . ")");
+	    $x = $this->dblink->query("call getDictionaryTOC('" . $lang . "', " . ($stopword?1:0) . ", " . $draft_count . ")");
         if ($this->dblink->errno) throw new EAException("Could not get TOC from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
         if (!$x) throw new EAException("Could not get TOC from dictionary: TOC is absent");
         $z = array();
@@ -134,11 +134,11 @@ class EmotionalDictionary {
         $this->dblink->next_result();
         return $z;
     }
-    function getUnassignedDraftLexemesTopN($_first_letters, $_lang, $_assigned, int $N = 100) {
+    function getUnassignedDraftLexemesTopN($_first_letters, $toc, $_lang, $_assigned, int $N = 100) {
         global $user;
         if (!is_null($user)) {
             $user->hasRole("read");
-            $sql = "call getDraftDictionaryTopN('" . $user->name . "', '" . $_first_letters . "', '" . $_lang . "', " . ($_assigned? 1: 0) . ", " . $N . ")";
+            $sql = "call getDraftDictionaryTopN('" . $user->name . "', '" . $_first_letters . "', '" . $toc . "', '" . $_lang . "', " . ($_assigned? 1: 0) . ", " . $N . ")";
             $x = $this->dblink->query($sql);
             if ($this->dblink->errno) throw new EAException("Could not get draft lexemes from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error . " - sql: " . $sql);
             if (!$x) throw new EAException("Could not get draft lexemes from dictionary: lexemes are absent");
@@ -153,11 +153,11 @@ class EmotionalDictionary {
             return null;
         }
     }
-    function getDraftTOC($_first_letters, $_lang, $_assigned) {
+    function getDraftTOC($_lang, $_assigned) {
         global $user;
         if (!is_null($user)) {
             $user->hasRole("read");
-            $sql = "call getDraftDictionaryTOC('" . $user->name . "', '" . $_first_letters . "', '" . $_lang . "', " . ($_assigned? 1: 0) . ")";
+            $sql = "call getDraftDictionaryTOC('" . $user->name . "', '" . $_lang . "', " . ($_assigned? 1: 0) . ")";
             $x = $this->dblink->query($sql);
             if ($this->dblink->errno) throw new EAException("Could not get draft TOC from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error . " - sql: " . $sql);
             if (!$x) throw new EAException("Could not get draft TOC from dictionary: lexemes are absent");

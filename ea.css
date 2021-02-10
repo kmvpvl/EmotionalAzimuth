@@ -128,3 +128,7 @@ toc {
   padding: 2px;
   font-size: 70%;
 }
+toc.active {
+  font-weight: bold;
+  color: black;
+}

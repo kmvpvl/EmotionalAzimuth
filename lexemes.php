@@ -1,16 +1,22 @@
 <input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="evaluated" data-off="not eval" data-onstyle="success" data-offstyle="danger" data-width="140">
 <input id="searchString" type="string" placeholder="Lexeme search..."/>
+<input id="searchTOC" style="display:none;"/>
 <lexemes_list></lexemes_list>
-<seek>1</seek>
+<seek></seek>
 <script>
 $("#filterIgnore").bootstrapToggle();
 $("#dlgModalEditLexemeEmotionIgnoreOnOff").bootstrapToggle();
 $("#dlgModalEditLexemeEmotionIgnoreStopword").bootstrapToggle();
 $("#filterIgnore").on('change', function(){
-	//debugger;
+	$("#searchTOC").val("");
 	drawLexemes();
 });
 $("#searchString").on('input', function(){
+	$("#searchTOC").val("");
+	drawLexemes();
+});
+$("#searchTOC").on('input', function(){
+	$("#searchString").val("");
 	drawLexemes();
 });
 $(window).resize(resizeLexemes());
@@ -67,6 +73,7 @@ function drawLexemes() {
 		language: $("#language").val(),
 		timezone: $("#timezone").val(),
 		first_letters: $("#searchString").val(),
+		toc: $("#searchTOC").val(),
 		stopword: $("#filterIgnore").is(':checked')?1:0,
 		count: 10
 	},
@@ -81,16 +88,20 @@ function drawLexemes() {
                     ls.data.lexemes.forEach(function (item, index) {
                         $("lexemes_list").append(drawLexeme(item));
 					});
-					//debugger;
 					$("seek").html(drawTOC(ls.data.toc, $("seek").innerHeight()));
+					$("toc").removeClass('active');
+					if ($("#searchTOC").val()) $("toc:contains('" + $("#searchTOC").val() + "')").addClass("active");
+					$("toc").on('click', function () {
+						$("#searchString").val("");
+						$("#searchTOC").val($(this).text());
+						$("lexemes_list").scrollTop(0);
+						$("#searchTOC").trigger("input");
+					});
 					$("lexeme > stopword:contains('1')").parent().addClass('stopword');
 					$('lexeme').on ('click', function(event) {
-						//debugger;
-						//alert(event.currentTarget.attributes['lexeme_id'].nodeValue);
 						lexeme.id = event.currentTarget.attributes['lexeme_id'].nodeValue;
 						lexeme.lexeme = $('lexeme[lexeme_id='+lexeme.id+'] > normal').text();
 						lexeme.lang = $('lexeme[lexeme_id='+lexeme.id+'] > lang').text();
-						//debugger;
 						lexeme.stopword = $('lexeme[lexeme_id='+lexeme.id+'] > stopword').text();
 						lexeme.emotion = JSON.parse($('lexeme[lexeme_id='+lexeme.id+'] > emotion').text());
 						$('#dlgModalEditLexemeTitle').text(lexeme.lexeme);

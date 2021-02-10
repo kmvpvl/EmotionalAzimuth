@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Feb 06, 2021 at 12:03 PM
+-- Generation Time: Feb 10, 2021 at 07:53 PM
 -- Server version: 10.5.8-MariaDB
 -- PHP Version: 7.4.13
 
@@ -32,9 +32,26 @@ CREATE DEFINER=`ea`@`localhost` PROCEDURE `getAllDrafts` (IN `_lexeme` VARCHAR(2
     SQL SECURITY INVOKER
 select * from `dictionary_draft` where `dictionary_draft`.`lexeme` like `_lexeme` and `dictionary_draft`.`lang` like `_lang`$$
 
-DROP PROCEDURE IF EXISTS `getDictionaryTopN`$$
-CREATE DEFINER=`ea`@`localhost` PROCEDURE `getDictionaryTopN` (IN `_first_letters` VARCHAR(250), IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN, IN `_draft_count` INT, IN `N` INT)  NO SQL
+DROP PROCEDURE IF EXISTS `getDictionaryTOC`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getDictionaryTOC` (IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN, IN `_draft_count` INT)  READS SQL DATA
     SQL SECURITY INVOKER
+select substr(`dictionary`.`lexeme`, 1, 2) as `cntnt`, count(*)  as `tbl`
+from `dictionary`
+left join 
+(select `dictionary_draft`.`lexeme`, `dictionary_draft`.`lang`, count(`dictionary_draft`.`id`) as `draft_count`
+from `dictionary_draft`
+group by `dictionary_draft`.`lexeme`, `dictionary_draft`.`lang`) as `counts` ON
+`dictionary`.`lexeme` = `counts`.`lexeme` and `dictionary`.`lang` = `counts`.`lang`
+
+where `counts`.`draft_count` >= `_draft_count` 
+and `dictionary`.`lang` = `_lang`
+and if(`dictionary`.`stopword` is null, 0, 1) = `_assigned`
+group by `cntnt`$$
+
+DROP PROCEDURE IF EXISTS `getDictionaryTopN`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getDictionaryTopN` (IN `_first_letters` VARCHAR(250), IN `_toc` VARCHAR(10), IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN, IN `_draft_count` INT, IN `N` INT)  READS SQL DATA
+    SQL SECURITY INVOKER
+BEGIN
 select `dictionary`.*, `counts`.`draft_count` 
 from `dictionary`
 left join 
@@ -45,20 +62,35 @@ group by `dictionary_draft`.`lexeme`, `dictionary_draft`.`lang`) as `counts` ON
 
 where `counts`.`draft_count` >= `_draft_count` 
 and (`dictionary`.`lexeme` like concat(`_first_letters`,'%') or `dictionary`.`lexeme` like concat('% ', `_first_letters`,'%'))
+and `dictionary`.`lexeme` >= `_toc`
 and `dictionary`.`lang` = `_lang`
 and if(`dictionary`.`stopword` is null, 0, 1) = `_assigned`
-LIMIT `N`$$
+order by `dictionary`.`lexeme` asc
+LIMIT `N`;
+end$$
+
+DROP PROCEDURE IF EXISTS `getDraftDictionaryTOC`$$
+CREATE DEFINER=`ea`@`localhost` PROCEDURE `getDraftDictionaryTOC` (IN `_user` VARCHAR(250), IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN)  NO SQL
+    SQL SECURITY INVOKER
+select substr(`dictionary`.`lexeme`, 1, 2) as `cntnt`, count(*)  as `tbl`
+from `dictionary` 
+left join (select * from `dictionary_draft` where `dictionary_draft`.`user` = `_user`) as `draft`
+
+on `dictionary`.`lexeme` = `draft`.`lexeme` and `dictionary`.`lang` = `draft`.`lang`
+where if (`draft`.`stopword` is null, 0, 1) = `_assigned` and `dictionary`.`lang` like `_lang` group by `cntnt`$$
 
 DROP PROCEDURE IF EXISTS `getDraftDictionaryTopN`$$
-CREATE DEFINER=`ea`@`localhost` PROCEDURE `getDraftDictionaryTopN` (IN `_user` VARCHAR(250), IN `_lexeme_first_letters` VARCHAR(250), IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN, IN `N` INT)  NO SQL
+CREATE DEFINER=`ea`@`localhost` PROCEDURE `getDraftDictionaryTopN` (IN `_user` VARCHAR(250), IN `_lexeme_first_letters` VARCHAR(250), IN `_toc` VARCHAR(10), IN `_lang` VARCHAR(5), IN `_assigned` BOOLEAN, IN `N` INT)  NO SQL
     SQL SECURITY INVOKER
 select `dictionary`.`id`, `dictionary`.`lexeme`, `dictionary`.`lang`, `draft`.`user`, `draft`.`stopword`, `draft`.`joy`, `draft`.`trust`, `draft`.`fear`, `draft`.`surprise`, `draft`.`sadness`, `draft`.`disgust`, `draft`.`anger`, `draft`.`anticipation`
 from `dictionary` 
 left join (select * from `dictionary_draft` where `dictionary_draft`.`user` = `_user`) as `draft`
 
 on `dictionary`.`lexeme` = `draft`.`lexeme` and `dictionary`.`lang` = `draft`.`lang`
-where if (`draft`.`stopword` is null, 0, 1) = `_assigned` and `dictionary`.`lang` like `_lang` and (`dictionary`.`lexeme` like concat(`_lexeme_first_letters`, '%') or `dictionary`.`lexeme` like concat('% ', `_lexeme_first_letters`, '%'))
-
+where if (`draft`.`stopword` is null, 0, 1) = `_assigned` 
+and `dictionary`.`lang` like `_lang` 
+and (`dictionary`.`lexeme` like concat(`_lexeme_first_letters`, '%') or `dictionary`.`lexeme` like concat('% ', `_lexeme_first_letters`, '%'))
+and `dictionary`.`lexeme` >= `_toc`
 LIMIT `N`$$
 
 DROP PROCEDURE IF EXISTS `getDraftLexemeFromDictionary`$$
@@ -254,7 +286,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (2, '2021-01-26 11:52:25', 'ru_RU', 'ГЛИНЯНЫЙ НАСЫПЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (3, '2021-01-26 11:52:25', 'ru_RU', 'СТОИТЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0.5, '2021-02-02 03:32:07'),
 (4, '2021-01-26 11:52:25', 'ru_RU', 'НОВЫЙ КРЕСТ', NULL, 0, 0, 0.6, 0, 1, 0, 0, 0, '2021-02-02 03:32:07'),
-(5, '2021-01-26 11:52:25', 'ru_RU', 'КРЕПКИЙ ДУБ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
+(5, '2021-01-26 11:52:25', 'ru_RU', 'КРЕПКИЙ ДУБ', 0, 0.1, 0.4, 0, 0, 0, 0, 0, 0, '2021-02-10 19:53:02'),
 (6, '2021-01-26 11:52:25', 'ru_RU', 'ТЯЖЕЛЫЙ', NULL, 0, 0, 0.5, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (7, '2021-01-26 11:52:25', 'ru_RU', 'ГЛАДКИЙ АПРЕЛЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (8, '2021-01-26 11:52:25', 'ru_RU', 'ДЕНЬ', NULL, 1, 0, 0, 0, 0, 0, 0, 0.5, '2021-02-02 03:32:07'),
@@ -407,7 +439,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (155, '2021-01-26 11:52:26', 'ru_RU', 'ПЕРЕДНИК', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (156, '2021-01-26 11:52:26', 'ru_RU', 'ПЛЕЧО', NULL, 0, 0.5, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (157, '2021-01-26 11:52:26', 'ru_RU', 'ПОБЕЖАЛЫЙ ГЛАЗ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
-(158, '2021-01-26 11:52:26', 'ru_RU', 'НАВЕРХ', NULL, 0.5, 0, 0, 0.5, 0, 0, 0, 0.5, '2021-02-02 03:32:07'),
+(158, '2021-01-26 11:52:26', 'ru_RU', 'НАВЕРХ', 1, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-10 19:40:18'),
 (159, '2021-01-26 11:52:26', 'ru_RU', 'МОЛОЖАВЫЙ НАЧАЛЬНИЦА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (160, '2021-01-26 11:52:26', 'ru_RU', 'СЕДОЙ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (161, '2021-01-26 11:52:26', 'ru_RU', 'СИДЕТЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
@@ -473,7 +505,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (221, '2021-01-26 11:52:26', 'ru_RU', 'ХОРОШИЙ ВОЛОС', NULL, 1, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (222, '2021-01-26 11:52:26', 'ru_RU', 'ТРОНУТЬ', NULL, 0, 0, 0, 1, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (223, '2021-01-26 11:52:26', 'ru_RU', 'МЕЩЕРСКИЙ РУКА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
-(224, '2021-01-26 11:52:26', 'ru_RU', 'КРАСИВЫЙ', NULL, 1, 0, 0, 1, 0, 0, 0, 0, '2021-02-02 03:32:07'),
+(224, '2021-01-26 11:52:26', 'ru_RU', 'КРАСИВЫЙ', 0, 0.2, 0, 0, 0, 0, 0, 0, 0, '2021-02-10 19:52:41'),
 (225, '2021-01-26 11:52:26', 'ru_RU', 'УБРАВШИЙ ГОЛОВА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (226, '2021-01-26 11:52:26', 'ru_RU', 'НЕ ПРИЧЕСКА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (227, '2021-01-26 11:52:26', 'ru_RU', 'НЕ ГРЕБЕНЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
@@ -495,7 +527,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (243, '2021-01-26 11:52:26', 'ru_RU', 'СОСЕД', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (244, '2021-01-26 11:52:26', 'ru_RU', 'ПАПА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (245, '2021-01-26 11:52:26', 'ru_RU', 'БРАТ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
-(246, '2021-01-26 11:52:26', 'ru_RU', 'АЛЕКСЕЙ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
+(246, '2021-01-26 11:52:26', 'ru_RU', 'АЛЕКСЕЙ', 1, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-10 19:30:36'),
 (247, '2021-01-26 11:52:26', 'ru_RU', 'МИХАЙЛО', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (248, '2021-01-26 11:52:26', 'ru_RU', 'ПРОШЛОЕ', NULL, 1, 0, 0, 0, 1, 0, 0, 0, '2021-02-02 03:32:07'),
 (249, '2021-01-26 11:52:26', 'ru_RU', 'ЛЕТО', NULL, 1, 0, 0, 0, 0, 0, 0, 1, '2021-02-02 03:32:07'),
@@ -510,7 +542,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (258, '2021-01-26 11:52:26', 'ru_RU', 'ЗАСТРЕЛИТЬ', NULL, 0, 0, 1, 1, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (259, '2021-01-26 11:52:26', 'ru_RU', 'МЕЩЕРСКИЙ ПЛАТФОРМА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (260, '2021-01-26 11:52:26', 'ru_RU', 'ВОКЗАЛ', NULL, 0, 0, 0, 0, 0, 0, 0, 4, '2021-02-02 03:32:07'),
-(261, '2021-01-26 11:52:26', 'ru_RU', 'БОЛЬШОЙ ТОЛПА', NULL, 0, 0, 0, 0, 0, 1, 0, 0, '2021-02-02 03:32:07'),
+(261, '2021-01-26 11:52:26', 'ru_RU', 'БОЛЬШОЙ ТОЛПА', 0, 0, 0, 0.2, 0, 0, 0, 0, 0.2, '2021-02-10 19:39:58'),
 (262, '2021-01-26 11:52:26', 'ru_RU', 'ПРИБЫВШИЙ НАРОД', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (263, '2021-01-26 11:52:26', 'ru_RU', 'НЕВЕРОЯТНЫЙ', NULL, 1, 0, 0, 1, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (264, '2021-01-26 11:52:26', 'ru_RU', 'ОШЕЛОМИВШИЙ НАЧАЛЬНИЦА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
@@ -595,7 +627,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (343, '2021-01-29 09:16:11', 'ru_RU', 'МОКРЫЙ САД', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (344, '2021-01-29 09:16:11', 'ru_RU', 'ХОЛОДНЫЙ МЕНЬ', NULL, 0, 0, 0, 0, 0, 1, 0, 0, '2021-02-02 03:32:07'),
 (345, '2021-01-29 09:16:11', 'ru_RU', 'ФАУСТ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
-(346, '2021-01-29 09:16:11', 'ru_RU', 'КРАСИВЫЙ ЕЩЕ', NULL, 1, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
+(346, '2021-01-29 09:16:11', 'ru_RU', 'КРАСИВЫЙ ЕЩЕ', 1, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-10 19:52:51'),
 (347, '2021-01-29 09:16:11', 'ru_RU', 'ВСЕГДА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (348, '2021-01-29 09:16:11', 'ru_RU', 'ХОРОШО КРЫЛАТКА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (349, '2021-01-29 09:16:11', 'ru_RU', 'ПАХНУТЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
