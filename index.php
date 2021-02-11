@@ -76,6 +76,7 @@ $(window).ready(function () {
 			hideLoading();
 			switch (status) {
 				case "success":
+					clearInstance();
 					$("instance").html(data);
 					break;
 				default:
@@ -96,9 +97,6 @@ $(window).ready(function () {
 			}
 		})
 	})
-});
-$(window).resize( function (){
-    calcResize();
 });
 function calcResize() {
     $('instance').css('height', $(window).height() - $('instance').offset().top + "px");
@@ -127,6 +125,10 @@ function showLoadingError(_text) {
 }
 function clearInstance() {
 	$("instance").html("");
+	$(window).off('resize');
+	$(window).resize( function (){
+    	calcResize();
+	});
 }
 function showLoginForm() {
 	$("#loginform").show();

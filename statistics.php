@@ -2,7 +2,7 @@
 </statistics>
 <script>
 google.charts.load('current', {'packages':['corechart']});
-//google.charts.setOnLoadCallback(drawChart);
+google.charts.setOnLoadCallback(getStat);
 
 function drawChart(arr) {
 	var data = google.visualization.arrayToDataTable(arr);
@@ -67,5 +67,5 @@ function getStat() {
 		showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
     });
 }    
-getStat();
+//getStat();
 </script>
