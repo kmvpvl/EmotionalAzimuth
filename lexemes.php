@@ -120,8 +120,8 @@ function drawLexemes() {
 						});
 						switch (lexeme.stopword) {
 							case '':
-								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('off');
-								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('disable');
+								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
+								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
 								break;
 						
 							case '0':
