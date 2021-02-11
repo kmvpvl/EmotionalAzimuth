@@ -1,5 +1,5 @@
 <input id="filterIgnore" type="checkbox" checked data-toggle="toggle" data-on="evaluated" data-off="not eval" data-onstyle="success" data-offstyle="danger" data-width="100">
-<input id="searchString" type="string" placeholder="Lexeme search..."/>
+<input id="searchString" type="string" placeholder="Lexeme search..." data-width="30"/>
 DraftsCount (количество оценок)
 <input id="filterDraftCount" type="number" value="1" data-decimals="2" min="1" step="1" data-width="20"/>
 <input id="searchTOC" style="display:none;"/>
