@@ -330,6 +330,7 @@ class EmotionalDictionary {
                     while (count($users) > $i++) $z[] = 0;
                     $activity[] = $z;
                 }
+                $this->dblink->next_result();
                 return ["overal"=>$a, "depth"=>$depth, "users"=>$users, "activity"=>$activity];
             break;
             default:

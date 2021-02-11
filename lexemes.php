@@ -119,17 +119,14 @@ function drawLexemes() {
 							$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
 						});
 						switch (lexeme.stopword) {
-							case '':
-								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
-								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
-								break;
-						
 							case '0':
 								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('off');
 								break;
 
+							case '':
+								lexeme.stopword = 1;
 							case '1':
 								$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
 								$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
