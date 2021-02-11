@@ -87,6 +87,7 @@ class EmotionalDictionary {
         $user = "";
         $password = "";
         $port = "";
+        if (!$settings) throw new EAException ("Settings file not found");
 		
 		if (array_key_exists("database", $settings)) {
 			if (array_key_exists("host", $settings["database"])) $host = $settings["database"]["host"];

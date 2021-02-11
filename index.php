@@ -29,13 +29,13 @@
 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
 	<ul class="navbar-nav mr-auto">
 		<li class="nav-item active">
-			<a class="nav-link" instance="lexemes.php" id="menuDictionary" data-toggle="collapse" data-target=".navbar-collapse.show">My Lexemes</a>
+			<a class="nav-link" instance="lexemes.php" id="menuDictionary" data-toggle="collapse" data-target=".navbar-collapse.show">Evaluation</a>
 		</li>
 		<li class="nav-item ">
 			<a class="nav-link" instance="editor.php" id="menuEditor" data-toggle="collapse" data-target=".navbar-collapse.show">Approve</a>
 		</li>
 		<li class="nav-item" >
-			<a class="nav-link" instance="text.php" id="menuText" data-toggle="collapse" data-target=".navbar-collapse.show">Text</a>
+			<a class="nav-link" instance="text.php" id="menuText" data-toggle="collapse" data-target=".navbar-collapse.show">Import Text</a>
 		</li>
 		<li class="nav-item" >
 			<a class="nav-link" instance="statistics.php" id="menuStat" data-toggle="collapse" data-target=".navbar-collapse.show">Stat</a>
@@ -63,6 +63,7 @@ $(window).ready(function () {
 		$(".nav-item").removeClass("active");
 		$(this).parent().addClass("active");
 		$(".navbar-nav").collapse('hide');
+		$(".navbar-brand").text("EA: " + $(this).text());
 		var p = $.post(event.target.attributes["instance"].value,
 		{
 			username: $("#username").val(),
@@ -136,6 +137,7 @@ function tryLogin() {
 	if (!$("#username").val()) return;
 	showLoading();
 	hideLoginForm();
+	$(".navbar-brand").text("EA: Evaluation");
 	var p = $.post("lexemes.php",
 	{
 		username: $("#username").val(),
