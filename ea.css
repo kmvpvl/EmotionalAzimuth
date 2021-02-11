@@ -117,7 +117,7 @@ seek {
   position: relative;
   display: block;
   /*border: solid 2px green;*/
-  width: 30px;
+  width: 2em;
   border-left: double 1px gray;
 }
 toc {

@@ -182,6 +182,7 @@ function drawLexemes() {
 					});
 					drafts = ls.data.drafts;
 					$("lexeme > stopword:contains('1')").parent().addClass('stopword');
+					resizeLexemes();
 					$('lexeme').on ('click', function(event) {
 						lexeme.id = event.currentTarget.attributes['lexeme_id'].nodeValue;
 						lexeme.lexeme = $('lexeme[lexeme_id='+lexeme.id+'] > normal').text();

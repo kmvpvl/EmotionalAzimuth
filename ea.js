@@ -36,6 +36,7 @@ function drawLexeme(lex) {
     return s;
 }
 function drawTOC(toc, height) {
+	height -= 20;
 	count = 0;
 	for (item in toc) {
 		count += parseInt(toc[item].tbl);
