@@ -298,7 +298,39 @@ class EmotionalDictionary {
                 while ($y = $x->fetch_assoc()) {
                     $users[] = $y;
                 }
-                return ["overal"=>$a, "depth"=>$depth, "users"=>$users];
+                $this->dblink->next_result();
+                $x = $this->dblink->use_result();
+                $activity = array();
+                $h = array();
+                $h[] = "Date";
+                foreach ($users as $v) {
+                    $h[] = $v["user"];
+                }
+                $activity[] = $h;
+                $z = null;
+                $old_date = null;
+                $i = 0;
+                while ($y = $x->fetch_assoc()) {
+                    if ($y["change_date"] != $old_date) {
+                        if (!is_null($z)) {
+                            while (count($users) > $i++) $z[] = 0;
+                            $activity[] = $z;
+                        }
+                        $old_date = $y["change_date"];
+                        $z = array();
+                        $i = 0;
+                        $z[] = $y["change_date"];
+                    }
+                    while ($users[$i++]["user"] != $y["user"]) {
+                        $z[] = 0;
+                    } 
+                    $z[] = intval($y["c"]);
+                }
+                if (!is_null($z)) {
+                    while (count($users) > $i++) $z[] = 0;
+                    $activity[] = $z;
+                }
+                return ["overal"=>$a, "depth"=>$depth, "users"=>$users, "activity"=>$activity];
             break;
             default:
                 throw new Exception("Unknown property: '".$name."'");

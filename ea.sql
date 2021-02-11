@@ -2,10 +2,10 @@
 -- version 5.0.4
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Feb 10, 2021 at 07:53 PM
--- Server version: 10.5.8-MariaDB
--- PHP Version: 7.4.13
+-- Host: 127.0.0.1
+-- Generation Time: Feb 11, 2021 at 02:21 PM
+-- Server version: 10.4.17-MariaDB
+-- PHP Version: 8.0.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -122,9 +122,18 @@ select `a`.`c` as `draft_count`, `a`.`l` as `lexemes` from
 select `dictionary_draft`.`user`, count(`dictionary_draft`.`id`) as `saved_drafts`
 from `dictionary_draft`
 where `dictionary_draft`.`stopword` is not null
-group by `dictionary_draft`.`user`;
+group by `dictionary_draft`.`user`
+order by `dictionary_draft`.`user` ASC;
         
- end$$
+select distinct CAST(`dictionary_draft`.`changed` as Date) as change_date, `dictionary_draft`.`user`, count(`dictionary_draft`.`id`) as `c`
+from `dictionary_draft`
+GROUP by change_date, `dictionary_draft`.`user`
+order by change_date asc, `dictionary_draft`.`user` ASC;
+end$$
+
+DROP PROCEDURE IF EXISTS `getUnassignedDictionaryTopN`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getUnassignedDictionaryTopN` (IN `N` INT)  NO SQL
+select * from `dictionary` where `dictionary`.`stopword` is null LIMIT N$$
 
 --
 -- Functions
@@ -336,7 +345,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (52, '2021-01-26 11:52:25', 'ru_RU', 'ГРУДЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (53, '2021-01-26 11:52:25', 'ru_RU', 'ФОРМА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (54, '2021-01-26 11:52:25', 'ru_RU', 'ОЧАРОВАНИЕ', NULL, 1, 0, 0, 0, 0, 0, 0, 1, '2021-02-02 03:32:07'),
-(55, '2021-01-26 11:52:25', 'ru_RU', 'НИКОГДА', NULL, 0, 0, 0, 0, 1, 0, 0, 0, '2021-02-02 03:32:07'),
+(55, '2021-01-26 11:52:25', 'ru_RU', 'НИКОГДА', 0, 0, 0, 0.1, 0.2, 0.1, 0, 0, 0, '2021-02-11 04:14:10'),
 (56, '2021-01-26 11:52:25', 'ru_RU', 'ЕЩЕ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (57, '2021-01-26 11:52:25', 'ru_RU', 'ЧЕЛОВЕЧЕСКИЙ СЛОВО', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (58, '2021-01-26 11:52:25', 'ru_RU', 'СЛЫТЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
@@ -631,7 +640,7 @@ INSERT INTO `dictionary` (`id`, `created`, `lang`, `lexeme`, `stopword`, `joy`, 
 (347, '2021-01-29 09:16:11', 'ru_RU', 'ВСЕГДА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (348, '2021-01-29 09:16:11', 'ru_RU', 'ХОРОШО КРЫЛАТКА', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (349, '2021-01-29 09:16:11', 'ru_RU', 'ПАХНУТЬ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
-(350, '2021-01-29 09:16:11', 'ru_RU', 'АНГЛИЙСКИЙ ОДЕКОЛОН', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
+(350, '2021-01-29 09:16:11', 'ru_RU', 'АНГЛИЙСКИЙ ОДЕКОЛОН', 0, 0.2, 0.2, 0, 0.1, 0, 0, 0, 0, '2021-02-11 04:02:30'),
 (351, '2021-01-29 09:16:11', 'ru_RU', 'МОЛОДАЯ', NULL, 1, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (352, '2021-01-29 09:16:11', 'ru_RU', 'ЧЕРНАЯ', NULL, 0, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
 (353, '2021-01-29 09:16:11', 'ru_RU', 'ИЗЯЩНЫЙ БОРОДА', NULL, 0.5, 0, 0, 0, 0, 0, 0, 0, '2021-02-02 03:32:07'),
