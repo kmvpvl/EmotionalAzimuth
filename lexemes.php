@@ -117,6 +117,9 @@ function drawLexemes() {
 							axis = event.currentTarget.attributes['modal_emotion'].nodeValue;
 							lexeme.emotion[axis] = $("[modal_emotion='"+axis+"']").val();
 							$('#dlgModalEditLexemeFlower').html(drawFlower(lexeme.emotion, 200));
+							$('#dlgModalEditLexemeEmotionIgnoreOnOff').bootstrapToggle('on');
+							$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('enable');
+							$('#dlgModalEditLexemeEmotionIgnoreStopword').bootstrapToggle('off');
 						});
 						switch (lexeme.stopword) {
 							case '0':
