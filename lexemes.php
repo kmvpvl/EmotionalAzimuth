@@ -19,7 +19,9 @@ $("#searchTOC").on('input', function(){
 	$("#searchString").val("");
 	drawLexemes();
 });
-$(window).resize(resizeLexemes());
+$(window).resize(function () {
+	resizeLexemes()
+});
 
 function resizeLexemes() {
 	$("lexemes_list").outerWidth($("seek").position().left - $("lexemes_list").position().left);
@@ -88,6 +90,7 @@ function drawLexemes() {
                     ls.data.lexemes.forEach(function (item, index) {
                         $("lexemes_list").append(drawLexeme(item));
 					});
+					resizeLexemes();
 					$("seek").html(drawTOC(ls.data.toc, $("seek").innerHeight()));
 					$("toc").removeClass('active');
 					if ($("#searchTOC").val()) $("toc:contains('" + $("#searchTOC").val() + "')").addClass("active");
@@ -98,7 +101,6 @@ function drawLexemes() {
 						$("#searchTOC").trigger("input");
 					});
 					$("lexeme > stopword:contains('1')").parent().addClass('stopword');
-					resizeLexemes();
 					$('lexeme').on ('click', function(event) {
 						lexeme.id = event.currentTarget.attributes['lexeme_id'].nodeValue;
 						lexeme.lexeme = $('lexeme[lexeme_id='+lexeme.id+'] > normal').text();
