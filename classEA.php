@@ -107,7 +107,7 @@ class EmotionalDictionary {
     function __destruct() {
 		$this->dblink->close();
     }
-    function getLexemesTopN(string $first_letters, $toc, string $lang, bool $stopword, int $draft_count, int $N = 100) {
+    function getLexemesTopN(string $first_letters, $toc, string $lang, bool $stopword, int $draft_count, int $N = 15) {
         global $user;
         if (!is_null($user)) $user->hasRole("editor");
 	    $x = $this->dblink->query("call getDictionaryTopN('" . $first_letters . "', '" . $toc . "', '" . $lang . "', " . ($stopword?1:0) . ", " . $draft_count . ", " . $N . ")");
@@ -135,7 +135,7 @@ class EmotionalDictionary {
         $this->dblink->next_result();
         return $z;
     }
-    function getUnassignedDraftLexemesTopN($_first_letters, $toc, $_lang, $_assigned, int $N = 100) {
+    function getUnassignedDraftLexemesTopN($_first_letters, $toc, $_lang, $_assigned, int $N = 15) {
         global $user;
         if (!is_null($user)) {
             $user->hasRole("read");
