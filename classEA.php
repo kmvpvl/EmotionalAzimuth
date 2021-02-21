@@ -118,6 +118,7 @@ class EmotionalDictionary {
             //var_dump($y);
             $z[] = new EmotionalLexeme(null, null, $y);
         };
+        $x->free_result();
         $this->dblink->next_result();
         return $z;
     }
@@ -132,6 +133,7 @@ class EmotionalDictionary {
             //var_dump($y);
             $z[] = $y;
         };
+        $x->free_result();
         $this->dblink->next_result();
         return $z;
     }
@@ -148,6 +150,7 @@ class EmotionalDictionary {
                 //var_dump($y);
                 $z[] = new EmotionalLexeme(null, null, $y);
             };
+            $x->free_result();
             $this->dblink->next_result();
             return $z;
         } else {
@@ -167,6 +170,7 @@ class EmotionalDictionary {
                 //var_dump($y);
                 $z[] = $y;
             };
+            $x->free_result();
             $this->dblink->next_result();
             return $z;
         } else {
@@ -180,6 +184,7 @@ class EmotionalDictionary {
         //echo $sql;
 	    $this->dblink->query($sql);
         if ($this->dblink->errno) throw new EAException("Could not create lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+        $this->dblink->next_result();
         return $this->getLexeme($eL->normal, $eL->lang);
     }
     function addDraft(EmotionalLexeme $eL) {
@@ -188,6 +193,7 @@ class EmotionalDictionary {
             $user->hasRole("read") && $user->hasRole("save_draft");
 
 	        $this->dblink->query("select addDraftLexemeToDictionary('" . $user->name . "', '" . $eL->normal . "', '" . $eL->lang . "', " . (is_null($eL->stopword) ? "null" : $eL->stopword) . ", " . (is_null($eL->emotion)?"null" : "'".json_encode($eL->emotion)."'") . ");");
+            $this->dblink->next_result();
             if ($this->dblink->errno) throw new EAException("Could not create draft lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
             return $this->getDraftLexeme($eL->normal, $eL->lang);
         } else {
@@ -201,6 +207,7 @@ class EmotionalDictionary {
         //echo $sql;
 	    $this->dblink->query($sql);
         if ($this->dblink->errno) throw new EAException("Could not off lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+        $this->dblink->next_result();
         return $this->getLexeme($eL->normal, $eL->lang);
     }
     function offDraft(EmotionalLexeme $eL) {
@@ -210,6 +217,7 @@ class EmotionalDictionary {
 
 	        $this->dblink->query("select offDraftLexeme('" . $user->name . "', '" . $eL->normal . "', '" . $eL->lang . "');");
             if ($this->dblink->errno) throw new EAException("Could not off draft lexeme in dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
+            $this->dblink->next_result();
             return $this->getDraftLexeme($eL->normal, $eL->lang);
         } else {
             throw new EAException("Could not off draft lexeme from dictionary: user is null");
@@ -223,13 +231,11 @@ class EmotionalDictionary {
         if ($this->dblink->errno) throw new EAException("Could not get lexeme from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
         if (!$x) throw new EAException("Could not get lexeme from dictionary: lexeme is absent");
         $y = $x->fetch_assoc();
+        $x->free_result();
+        $this->dblink->next_result();
         if (!$y) throw new EAException("Could not get lexeme from dictionary: lexeme is absent");
         //var_dump($y);
-        $el->stopword = $y["stopword"];
-        $ev = new EmotionalVector();
-        $ev->fillByArray($y);
-        if (!is_null($ev->length())) $el->emotion = $ev;
-        $this->dblink->next_result();
+        $el = new EmotionalLexeme(null, null, $y);
         return $el;
     }
     function getAllDrafts($lexeme, $lang): array {
@@ -248,6 +254,7 @@ class EmotionalDictionary {
                 if (!is_null($ev->length())) $el->emotion = $ev;
                 $ret[(string)$y["user"]] = $el;
             };
+            $x->free_result();
             $this->dblink->next_result();
         }
         return $ret;
@@ -261,13 +268,14 @@ class EmotionalDictionary {
             if ($this->dblink->errno) throw new EAException("Could not get draft lexeme from dictionary: " . $this->dblink->errno . " - " . $this->dblink->error);
             if (!$x) throw new EAException("Could not get draft lexeme from dictionary: lexeme is absent");
             $y = $x->fetch_assoc();
+            $x->free_result();
+            $this->dblink->next_result();
             if (!$y) throw new EAException("Could not get draft lexeme from dictionary: lexeme is absent");
             //var_dump($y);
             $el->stopword = $y["stopword"];
             $ev = new EmotionalVector();
             $ev->fillByArray($y);
             if (!is_null($ev->length())) $el->emotion = $ev;
-            $this->dblink->next_result();
             return $el;
         } else {
             return null;
@@ -344,7 +352,7 @@ class EmotionalText implements JsonSerializable {
     public $emotion;
     public $lexemes;
     public $lang;
-    function __construct(string $text, $lang) {
+    function __construct(string $text, string $lang) {
         global $morphy;
         $this->text = trim($text);
         $this->lang = $lang;
@@ -486,10 +494,31 @@ class EmotionalText implements JsonSerializable {
     }
     protected function revealLexeme(EmotionalLexeme $el){
         global $eDict;
-        if ($eDict) $eel = $eDict->add($el);
-        $this->lexemes[] = $eel;
-        if (!is_null($eel) && !is_null($eel->emotion) && !is_null($eel->stopword) && !$eel->stopword) $this->emotion->add($eel->emotion);
-
+        global $user;
+        $canAdd = true;
+        if (!is_null($user)) {
+            try {
+                $user->hasRole("discover");
+            } catch (EAException $e) {
+                $canAdd = false;
+            }
+        }
+        if ($eDict) {
+            $eel = null;
+            if ($canAdd) {
+                $eel = $eDict->add($el);
+            } else {
+                try {
+                    $eel = $eDict->getLexeme($el->normal, $el->lang);
+                }  catch (EAException | phpMorphy_Exception $e) {
+                    $eel = null;
+                }
+            }
+            if (!is_null($eel) && !is_null($eel->emotion) && !is_null($eel->stopword) && !$eel->stopword) {
+                $this->lexemes[] = $eel;
+                $this->emotion->add($eel->emotion);
+            }
+        }
     }
     public function jsonSerialize() {
         return [
