@@ -321,7 +321,7 @@ class EmotionalDictionary {
                 while ($y = $x->fetch_assoc()) {
                     if ($y["change_date"] != $old_date) {
                         if (!is_null($z)) {
-                            while (count($users) > $i++) $z[] = 0;
+                            while (count($users) > $i++) $z[] = null;
                             $activity[] = $z;
                         }
                         $old_date = $y["change_date"];
@@ -330,12 +330,12 @@ class EmotionalDictionary {
                         $z[] = $y["change_date"];
                     }
                     while ($users[$i++]["user"] != $y["user"]) {
-                        $z[] = 0;
+                        $z[] = null;
                     } 
                     $z[] = intval($y["c"]);
                 }
                 if (!is_null($z)) {
-                    while (count($users) > $i++) $z[] = 0;
+                    while (count($users) > $i++) $z[] = null;
                     $activity[] = $z;
                 }
                 $this->dblink->next_result();
