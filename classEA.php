@@ -487,8 +487,7 @@ class EmotionalText implements JsonSerializable {
         $this->emotion->normalize2();
     }
     static function parseSentence($sentence) {
-        return preg_split('/[,.\(\)\-\—:;"_»«\p{Zs}]+/imu', $sentence);
-//        return preg_split('/[,.\-:;"_\s]{1,}/i', $sentence);
+        return preg_split('/[^\p{L}]+/imu', $sentence);
     }
     static function parseText($text){
         return preg_split('/[.|!|?]\s/i', $text);
@@ -694,6 +693,7 @@ class EmotionalVector  implements JsonSerializable {
         foreach ($this->coords as $key => $value) {
             if ($this->$key > $l) $l = $this->$key;
         }
+        if (!$l) return;
         foreach ($this->coords as $key => $value) {
             $this->$key /= $l;
         }
