@@ -5,7 +5,7 @@
 </result>
 <script>
 function drawText(t) {
-    res = "<emotional_text>"+drawFlower(t.emotion)+"<flower></flower>";
+    res = "<emotional_text>"+drawFlower(t.emotion, 200)+"<flower></flower>";
     res += "<emotional_text_preview>" + t.text.substr(0, 50) + "..." + "</emotional_text_preview>";
     if (t.sentences) {
         res += "<sentences>";
