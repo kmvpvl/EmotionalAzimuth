@@ -102,7 +102,7 @@ function drawLexemes() {
 					});
 					$("lexeme > stopword:contains('1')").parent().addClass('stopword');
 					$('lexeme').on ('click', function(event) {
-						lexeme.id = event.currentTarget.attributes['lexeme_id'].nodeValue;
+						lexeme.id = $(this).attr('lexeme_id');
 						lexeme.lexeme = $('lexeme[lexeme_id='+lexeme.id+'] > normal').text();
 						lexeme.lang = $('lexeme[lexeme_id='+lexeme.id+'] > lang').text();
 						lexeme.stopword = $('lexeme[lexeme_id='+lexeme.id+'] > stopword').text();
@@ -179,6 +179,11 @@ $(document).ready (function () {
 		$("#dlgModalEditLexeme").modal('hide');
 		drawLexemes();
 	});
+	$('[dlg-button="btn-dlgModal-next"]').on('click', function () {
+		saveLexeme(lexeme);
+		var n = $('lexeme[lexeme_id="'+lexeme.id+'"]').next('lexeme');
+		if (n) n.click();
+	});
 })
 
 function drawEmotion (emotion) {
@@ -211,6 +216,7 @@ include ('editFlower.php');
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+				<button type="button" dlg-button="btn-dlgModal-next" class="btn btn-primary">Save&amp;Next</button>
 				<button type="button" dlg-button="btn-dlgModal-ok" class="btn btn-primary">Save</button>
 			</div>
 		</div>

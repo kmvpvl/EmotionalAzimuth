@@ -224,6 +224,11 @@ $(document).ready (function () {
 		$("#dlgModalEditLexeme").modal('hide');
 		//drawLexemes();
 	});
+	$('[dlg-button="btn-dlgModal-next"]').on('click', function () {
+		saveLexeme(lexeme);
+		var n = $('lexeme[lexeme_id="'+lexeme.id+'"]').next('lexeme');
+		if (n) n.click();
+	});
 })
 
 function drawEmotion (emotion) {
@@ -259,6 +264,7 @@ include ('editFlower.php');
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+		<button type="button" dlg-button="btn-dlgModal-next" class="btn btn-primary">Save&amp;Next</button>
         <button type="button" dlg-button="btn-dlgModal-ok" class="btn btn-primary">Save</button>
       </div>
     </div>
