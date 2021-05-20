@@ -1,4 +1,10 @@
 <?php
+error_reporting(E_ERROR | E_STRICT);
+if (!isset($_POST["username"]) || !isset($_POST["password"])) {
+    http_response_code(401);
+    die ("Unathorized request!");
+}
+
 require_once("classEA.php");
 function prepareJsonResponseData($callback, $object){
     $ret = [];
@@ -13,7 +19,8 @@ function prepareJsonResponseData($callback, $object){
 }
 
 try {
-	$ea = new EAUser($_POST['username'], $_POST['password']);
+	$eaUser = new EAUser($_POST['username'], $_POST['password']);
+    $eaUser->authorize();
 } catch (Exception | EAException $e) {
 	http_response_code(401);
 	die ($e->getMessage());

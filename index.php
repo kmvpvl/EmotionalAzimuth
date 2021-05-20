@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="ea.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="eventhandler.js"></script>
 <script src="ea.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -20,7 +21,7 @@
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <body>
 <nav class="navbar navbar-expand-sm navbar-dark bg-dark ml-0">
-	<a class="navbar-brand" href="#">EA
+	<a class="navbar-brand">EA
 	</a>
 	<!--button type="button" class="btn btn-success">Refresh</button-->
 	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,25 +31,22 @@
 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
 	<ul class="navbar-nav mr-auto">
 		<li class="nav-item active">
-			<a class="nav-link" instance="lexemes.php" id="menuDictionary" data-toggle="collapse" data-target=".navbar-collapse.show">Evaluation</a>
+			<a class="nav-link" instance="overview" id="menuOverview" data-toggle="collapse" data-target=".navbar-collapse.show">Overview</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" instance="todo" id="menuDictionary" data-toggle="collapse" data-target=".navbar-collapse.show">To do</a>
 		</li>
 		<li class="nav-item ">
-			<a class="nav-link" instance="editor.php" id="menuEditor" data-toggle="collapse" data-target=".navbar-collapse.show">Approve</a>
-		</li>
-		<li class="nav-item" >
-			<a class="nav-link" instance="text.php" id="menuText" data-toggle="collapse" data-target=".navbar-collapse.show">Import Text</a>
-		</li>
-		<li class="nav-item" >
-			<a class="nav-link" instance="statistics.php" id="menuStat" data-toggle="collapse" data-target=".navbar-collapse.show">Stat</a>
+			<a class="nav-link" instance="editor" id="menuEditor" data-toggle="collapse" data-target=".navbar-collapse.show">My stat</a>
 		</li>
 	</ul>
 	<ul class="navbar-nav lr-auto">
 		<li class="nav-item dropdown">
-			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">User</a>
+			<a class="nav-link dropdown-toggle" href="#" id="menuUser" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">User</a>
 			<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 				<a class="dropdown-item" href="#">My settings</a>
 				<a class="dropdown-item" href="#"></a>
-				<a class="dropdown-item" href="#">Logout</a>
+				<a class="dropdown-item" id="menuLogout" data-toggle="collapse" data-target=".navbar-collapse.show">Logout</a>
 			</div>
 		</li>
 	</ul>
@@ -56,153 +54,107 @@
 </nav>
 <script>
 $(window).ready(function () {
-	calcResize();
-	showLoginForm();
+//	showLoginForm();
+	$("#username").val(localStorage.getItem("username")?localStorage.getItem("username"):"");
+	$("#password").val(localStorage.getItem("password")?localStorage.getItem("password"):"");
+	$("#menu-logout").on('click', function(){
+		$("messages").hide();
+		$("instance").html("");
+		showLoginForm();
+	});
 	tryLogin();
-	$("a[instance]").on ('click', function (event) {
-		showLoading();
-		$(".nav-item").removeClass("active");
-		$(this).parent().addClass("active");
-		$(".navbar-nav").collapse('hide');
-		$(".navbar-brand").text("EA: " + $(this).text());
-		var p = $.post(event.target.attributes["instance"].value,
-		{
-			username: $("#username").val(),
-			password: $("#password").val(),
-			language: $("#language").val(),
-			timezone: $("#timezone").val()
-		},
+	$("a[instance]").on ('click', function() {
+		sendDataToServer($(this).attr("instance"), undefined,
 		function(data, status){
-			hideLoading();
-			switch (status) {
-				case "success":
-					clearInstance();
-					$("instance").html(data);
-					break;
-				default:
-					clearInstance();
-					hideLoading();
-					showLoginForm();
-			}
+			$("instance").html(receiveHtmlFromServer(data, status));
 		});
-		p.fail(function(data, status) {
-			switch (data.status) {
-				case 401:
-					clearInstance();
-					showLoginForm();
-					showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
-					break;
-				default:				
-					showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
-			}
-		})
-	})
+	});
+	$("#submitLogin").on ('click', function(){
+		localStorage.setItem("username", $("#username").val());
+		localStorage.setItem("password", $("#password").val());
+	//		localStorage.setItem("", $("#").val());
+	//		localStorage.setItem("", $("#").val());
+		tryLogin();
+	});
+	$('#menuLogout').click(function(){
+		showLoginForm();
+	});
 });
-function calcResize() {
-    $('instance').css('height', $(window).height() - $('instance').offset().top + "px");
-    $("#errorLoadingMessage").offset({top: $(window).height()-$("#errorLoadingMessage").outerHeight()-$("nav").outerHeight(), left: 0});
-    $("#loginform").offset({top: ($(window).height() - $("#loginform").outerHeight())/2, left: 0});
-    $("#loadingSpinner").offset({top: ($(window).height() - $("#loadingSpinner").outerHeight())/2, left: ($("body").innerWidth() - $("#loadingSpinner").outerWidth())/2});
-}
 function showLoading() {
-	$("#errorLoadingMessage").hide();
-	$("#loadingSpinner").show();
+	$("loading-wait").show();
 }
 function hideLoading() {
-	$("#loadingSpinner").hide();
+	$("loading-wait").hide();
 } 
 function hideLoginForm() {
-	$("#loginform").hide();
+	$("login-form").hide();
 }
-function showLoadingError(_text) {
-	if (!$("#errorLoadingMessage").length) {
-		$('body').append('<div id="errorLoadingMessage" class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><span></span></div>');
-	}
+/**
+ * 
+ */
+function showError(_text) {
+	$('body').append('<error-message class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><span></span></error-message>');
 	hideLoading();
-	$("#errorLoadingMessage > span").html(_text);
-    calcResize();
-	$("#errorLoadingMessage").show();
+	$("error-message > span").html(_text);
+	//$("error-message").css('position', 'absolute');
+	$("error-message").show();
 }
 function clearInstance() {
 	$("instance").html("");
-	$(window).off('resize');
-	$(window).resize( function (){
-    	calcResize();
-	});
 }
 function showLoginForm() {
-	$("#loginform").show();
-	$("#submitLogin").on ('click', function (){
-		tryLogin();
-	})
+	hideLoading();
+	$("login-form").show();
 }
 function tryLogin() {
 	if (!$("#username").val()) return;
-	showLoading();
+	eaUser = new EAUser();
 	hideLoginForm();
-	$(".navbar-brand").text("EA: Evaluation");
-	var p = $.post("lexemes.php",
-	{
-		username: $("#username").val(),
-		password: $("#password").val(),
-		language: $("#language").val(),
-		timezone: $("#timezone").val()
-	},
-	function(data, status){
-		hideLoading();
-		switch (status) {
-			case "success":
-				$("instance").html(data);
-				break;
-			default:
-				clearInstance();
-				showLoginForm();
-		}
+	eaUser.on('change', function(u, o){
+		$('#menuUser').text(u.currentUser.fullname);
+		loadInstance();
 	});
-	p.fail(function(data, status) {
-		hideLoading();
-		switch (data.status) {
-			case 401:
-				clearInstance();
-				showLoginForm();
-				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
-				break;
-			default:				
-				showLoadingError(data.status + ": " + data.statusText + ". " + data.responseText);
-		}
-	})
+}
+function loadInstance() {
+	if ($('instance').html()) return;
+	sendDataToServer("overview", undefined, 
+	function(data, status){
+		$("instance").html(receiveHtmlFromServer(data, status));
+	});
+}
+function execAssign(assign_id) {
+	$('instance').html('');
+	sendDataToServer("execAssign", {id:assign_id}, 
+	function(data, status){
+		$("instance").html(receiveHtmlFromServer(data, status));
+	});
 }
 </script>
-<instance>
-</instance>
-<div id="loadingSpinner" class="spinner-border"></div>
-<div id="loginform">
-	<div class="container">
-	<div class="form-group">
-		<label for="username">User name</label>
-		<input type="text" placeholder="Enter Username" id="username" name="username" required value="">
+<instance></instance>
+<loading-wait class="spinner-border"></loading-wait>
+<login-form>
+	<div class="input-group">
+		<div class="input-group-prepend">
+		<span class="input-group-text">User name</span>
+		</div>
+		<input class="form-control" type="text" placeholder="Enter Username" id="username" name="username" required value="">
 	</div>
-	<div class="form-group">
-		<label for="password">Password</label>
-		<input type="password" placeholder="Enter Password" id="password" required value=""></input>
+	<div class="input-group">
+		<div class="input-group-prepend">
+		<span class="input-group-text">Password</span>
+		</div>
+		<input class="form-control" type="password" placeholder="Enter Password" id="password" required value=""></input>
+		<div class="input-group-append">
+		<button class="form-control btn btn-success" id="submitLogin">Login</button>
+		</div>
 	</div>
-	<div class="form-group">
-		<label for="timezone">Timezone</label>
-		<input id="timezone" type="number" min="-12" max="12" class="digit" value="3"></input>
-		<label for="language">Language</label>
-		<select id="language" type="select"><option value="en" default="default">EN</option><option value="ru">RU</option></select>
-	</div>
-	<div class="form-group">		
-		<button id="submitLogin">Login</button>
-		<label>
-		<input type="checkbox" checked="checked" name="remember"> Remember me</input>
-		</label>
+	<div class="input-group">		
 		<div class="container" style="background-color:#f1f1f1">
 		<span class="psw">Forgot <a href="">password?</a></span>
-	</div>
+		</div>
 	</div>
 	</div>
 	
-</div>
+</login-form>
 </body>
 </html>

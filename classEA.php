@@ -1,56 +1,192 @@
 <?php
-error_reporting(E_ERROR | E_STRICT);
-if (!isset($_POST["username"]) || !isset($_POST["password"])) {
-    http_response_code(401);
-    die ("Unathorized request!");
+class JsonDateTime extends DateTime implements JsonSerializable {
+    function __construct(DateTime $dt) {
+		parent::__construct($dt->format("r"));
+	}
+    function jsonSerialize(){
+        return $this->format(DateTime::RFC1036);
+    }
 }
-$user = null;
-$user = new EAUser($_POST["username"], $_POST["password"]);
-$user->authorize();
+abstract class EAAbstract implements JsonSerializable {
+    protected $id = null;
+    protected $data = null;
+    protected $user = null;
+    function __construct(?EAUser $user){
+        $this->user = $user;
+    }
+    function arrayToObject(array $array) {
+        foreach($array as $key=>$val) {
+            if (property_exists($this, $key) && !$this->$key) $this->$key = $val;
+        }
+    }
 
+    function toDataArray(array $arr) {
+        foreach ($arr as $key => $value) {
+            $d = DateTime::createFromFormat('Y-m-d H:i:s', $value, $this->user->timezone);
+            if ($d !== false) {
+                $arr[$key] = new JsonDateTime($d);
+            }
+        }
+        $this->data = $arr;
+        $this->id = $arr['id'];
+    }
+
+    function jsonSerialize(){
+        if (!$this->data) return null;
+        return $this->data;
+    }
+}
 final class EAException extends Exception {
 
 }
-class EAUser {
+class EAAssign extends EAAbstract implements JsonSerializable {
+    function __construct(EAUser $user, ?int $id=null, ?array $arr = null){
+        EAAbstract::__construct($user);
+        if ($id) {
+            $sql = "call getAssignInfo(".$id.")";
+            $x = $this->user->dblink->query($sql);
+            if ($this->user->dblink->errno || !$x) throw new EAException("Unexpected error while assign found: " . $this->user->dblink->errno . " - " . $this->user->dblink->error);
+            $y = $x->fetch_assoc();
+            if (!$y) throw new EAException("The assign not found!");
+            $x->free_result();
+            $this->user->dblink->next_result();
+            $this->toDataArray($y);
+        } else {
+            if (!$arr) throw new EAException('Could not create EAAssign \'cause neither \'id\' nor \'array\'');
+            $this->toDataArray($arr);
+        }
+    }
+    function doStart(){
+        $sql = "call startAssign(".$this->id.")";
+        $x = $this->user->dblink->query($sql);
+        if ($this->user->dblink->errno || !$x) throw new EAException("Unexpected error while assign found: " . $this->user->dblink->errno . " - " . $this->user->dblink->error);
+        $y = $x->fetch_assoc();
+        if (!$y) throw new EAException("The assign not found!");
+        $x->free_result();
+        $this->user->dblink->next_result();
+        $this->toDataArray($y);
+    }
+}
+class EASet extends EAAbstract implements JsonSerializable {
+    /**
+     * 
+     */
+    function __construct(EAUser $user, ?int $id=null){
+        EAAbstract::__construct($user);
+        if ($id){
+            $sql = "call getSetInfo(".$id.")";
+            $x = $this->user->dblink->query($sql);
+            if ($this->user->dblink->errno || !$x) throw new EAException("Unexpected error while set found: " . $this->user->dblink->errno . " - " . $this->user->dblink->error);
+            $y = $x->fetch_assoc();
+            if (!$y) throw new EAException("The set not found!");
+            $x->free_result();
+            $this->user->dblink->next_result();
+            $this->toDataArray($y);
+
+            $sql = "call getLexemesBySetId(".$this->id.")";
+            $x = $this->user->dblink->query($sql);
+            if ($this->user->dblink->errno || !$x) throw new EAException("Unexpected error while load set's lexemes: " . $this->user->dblink->errno . " - " . $this->user->dblink->error);
+            
+            $this->data["lexemes"] = [];
+            while ($y = $x->fetch_assoc()) {
+                $l = new EALexeme($this->user, null, $y);
+                $this->data["lexemes"][] = $l;
+            }
+            $x->free_result();
+            $this->user->dblink->next_result();
+
+        } else {
+            //new set
+        }
+    }
+}
+class EALexeme extends EAAbstract implements JsonSerializable {
+    function __construct(EAUser $user, ?int $id=null, ?array $arr=null){
+        $this->user = $user;
+        EAAbstract::__construct($user);
+        if ($id) {
+            //load from db
+        } else {
+            if ($arr) {
+                //already loaded from db
+                $this->toDataArray($arr);
+            } else {
+                //new Lexeme
+            }
+        }
+    }
+}
+class EAUser extends EAAbstract implements JsonSerializable {
     protected $_hash;
     protected $username;
-    function __construct($username, $password) {
+    protected $dblink;
+    protected $timezone;
+    function __construct(string $username, string $password) {
+        $this->timezone = new DateTimeZone('+0400');
+        EAAbstract::__construct($this);
         $this->username = $username;
         $this->_hash = md5($username . $password);
+		// finding and parsing  settings.ini for database settings & folders settings
+		$settings = parse_ini_file("settings.ini", true);
+		if (!$settings) new EAException("Settings INI-file not found!");
+        // connecting to database
+        $host = "localhost";
+        $database = "ea";
+        $dbuser = "";
+        $dbpassword = "";
+		$port = "3306";
+		
+		if (array_key_exists("database", $settings)) {
+			if (array_key_exists("host", $settings["database"])) $host = $settings["database"]["host"];
+			if (array_key_exists("database", $settings["database"])) $database = $settings["database"]["database"];
+			if (array_key_exists("user", $settings["database"])) $dbuser = $settings["database"]["user"];
+			if (array_key_exists("password", $settings["database"])) $dbpassword = $settings["database"]["password"];
+			if (array_key_exists("port", $settings["database"])) $port = $settings["database"]["port"];
+		} else throw new EAException ("database settings are absent"); 
+		
+		$this->dblink = new mysqli($host, $dbuser, $dbpassword, $database, $port);
+		if ($this->dblink->connect_errno) throw new EAException("Unable connect to database (" . $host . " - " . $database . " - ".$port."): " . $this->dblink->connect_errno . " - " . $this->dblink->connect_error);
+		$this->dblink->set_charset("utf-8");
+		$this->dblink->query("set names utf8");
+		if (!is_null($this->timezone)) $this->dblink->query("SET @@session.time_zone='" . $this->timezone->getName() . "';");
+        $sql = "call getUserByName('".$username."')";
+        $x = $this->dblink->query($sql);
+	    if ($this->dblink->errno || !$x) throw new EAException("Unexpected error while user found: " . $this->dblink->errno . " - " . $this->dblink->error);
+		$y = $x->fetch_assoc();
+        if (!$y) throw new EAException("User not found!");
+		$x->free_result();
+		$this->dblink->next_result();
+        $this->toDataArray($y);
     }
-    function authorize() {
-        $users_xml = simplexml_load_file(dirname(__FILE__) . '/users.xml');
-        if (!$users_xml) throw new EAException("Users.xml not found!");
-        $found = $users_xml->xpath("//user[@id='" . $this->username . "']");
-        $u = null;
-        if (!$found) {
-            $u = $users_xml->addChild("user");
-            $u->addAttribute("id", $this->username);
-            $u->addAttribute("md5", $this->_hash);
-            $u->addAttribute("roles", "read;save_draft");
-            $users_xml->asXML(dirname(__FILE__) . '/users.xml');
-        } else {
-            $u = $found[0];
-        }
-        if ((string) $u["md5"] != $this->_hash) throw new EAException("Password incorrect! " . $this->_hash);
-        return $u;
+    function authorize():void {
+        if ((string) $this->data["hash"] != $this->_hash) throw new EAException("Password incorrect! " . $this->_hash);
     }
-    function hasRole($rolename) {
-        $xml_user = $this->authorize();
-        $roles = (string) $xml_user["roles"];
+    function hasRole(string $rolename):bool {
+        if (!$this->data) $this->authorize();
+        $roles = (string) $this->data["roles"];
         $roles_arr = explode(";", $roles);
         if (!in_array($rolename, $roles_arr)) throw new EAException("User ".$this->username." has no ".$rolename." role!");
         return true;
     }
-    function __get($name) {
+    function getAssigns(): array{
+        $ret = [];
+        if (!$this->data) $this->authorize();
+        $sql = "call getAssignsOnUser(".$this->id.")";
+        $x = $this->dblink->query($sql);
+	    if ($this->dblink->errno || !$x) throw new EAException("Unexpected error while get user's assigns: " . $this->dblink->errno . " - " . $this->dblink->error);
+		while ($y = $x->fetch_assoc()) {
+            $ret[$y['id']] = new EAAssign($this, null, $y);
+        }
+		$x->free_result();
+		$this->dblink->next_result();
+        return $ret;
+    }
+    function __get(string $name) {
         switch ($name) {
             case 'name':
                 return $this->username;
-                break;
-            
             default:
-                # code...
-                break;
+                return $this->$name;
         }
     }
 }

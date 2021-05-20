@@ -2,37 +2,44 @@
   box-sizing: border-box;
 }
 html {
-  font-size: 1rem;
+  font-size: 0.8rem;
+  height: 100%;
 }
 body {
-  margin:0;
-  padding:0px;
+  min-height: 100%;
+  max-height: 100%;
+  min-width: 100%;
+  max-width: 100%;
   overflow:hidden;
+  width: 100%;
+  height:100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
+  grid-gap: 0.2em;
 }
 a {
   cursor: pointer;
 }
 instance {
   display: block;
-  position: relative;
-  border: solid 2px green;
   padding: 5px;
   margin: 0px;
-  padding-left: 2;
-  padding-right: 2;
   width: 100%;
+  min-height: 100%;
+  max-height: 100%;
   overflow-y: auto;
 }
-#loginform {
-  display: none;
+login-form {
   position: absolute;
-}
-lexeme {
-  display: block;
-  cursor: pointer;
-}
-lexeme.hover {
-  font-weight: bold;
+  width: 80%;
+  height: 50%;
+  margin: auto;
+  top: 0;
+  left:0;
+  right:0;
+  bottom:0;
+  display:none;
 }
 .joy{
   fill:#edc500;
@@ -69,66 +76,81 @@ lexeme.hover {
 .stopword {
   color: silver;
 }
-lexeme > lang {
-  display: none;
-}
-lexeme > stopword {
-  display: none;
-}
-lexeme > emotion {
-  display: none;
-}
-#loadingSpinner {
+loading-wait {
   position: absolute;
+  margin: auto;
+  top: 0;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index: 5;
   display: none;
 }
-#errorLoadingMessage {
-  display: none;
+error-message {
   position: absolute;
-  /*z-index: 0;*/ 
+  margin: auto;
+  top: 0;
+  left:0;
+  right:0;
+  bottom:0;
+  display:none;
+  z-index: 10;
 }
-.emotional-text {
-  width: 100%;
-  height: 50%;
-}
-emotional_text {
-  display: block;
-}
-input.slider {
-  width:100%;
-}
-draft {
-  cursor: pointer;
-}
-lexemes_list {
-  float: left;
-  position: relative;
-  /*border: solid 2px green;*/
-  padding: 5px;
-  margin: 0px;
-  padding-left: 2;
-  padding-right: 2;
-  width: auto;
-  overflow-y: auto;
-  display: block;
-}
-seek {
-  float: right;
-  position: relative;
-  display: block;
-  /*border: solid 2px green;*/
-  width: 2em;
-  border-left: double 1px gray;
-}
-toc {
-  display: block;
-  cursor: pointer;
-  position: absolute;
-  color: gray;
-  padding: 2px;
-  font-size: 70%;
-}
-toc.active {
+assigns::before {
+  content: 'Assigned tasks';
+  font-size: xx-large;
   font-weight: bold;
-  color: black;
+}
+assigns-header > span {
+  text-align: center;
+  font-weight: bold;
+}
+assigns {
+  display: grid;
+  grid-template-rows: repeat(auto);
+}
+assign, assigns-header {
+  display: grid;
+  grid-template-columns: 1fr 7em 4em 4em 4em;
+  cursor: pointer;
+  border-bottom: black 1px solid;
+}
+assign-tools {
+  display:none;
+  font-size: x-large;
+}
+assign.selected{
+  background-color: blue;
+  color: white;
+  grid-template-columns: 2em 1fr 7em 4em 4em 4em;
+}
+assign.selected > assign-tools {
+  display: inline;
+}
+exec-assign {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+exec-assign::before {
+  content: 'Doing activity';
+  font-size: xx-large;
+  font-weight: bold;
+}
+exec-assign > exec-toolbar-control {
+  display: block;
+}
+exec-assign > lexemes {
+  display: grid;
+  min-height: 100%;
+  grid-template-rows: repeat(auto);
+}
+exec-assign > lexemes > lexeme {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  cursor: pointer;
+  vertical-align: middle;
+}
+exec-assign > lexemes > lexeme > flower{
+  width:100px;
+  height: 100px;
 }
