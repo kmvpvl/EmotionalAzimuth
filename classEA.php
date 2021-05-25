@@ -39,6 +39,35 @@ abstract class EAAbstract implements JsonSerializable {
 final class EAException extends Exception {
 
 }
+class EAAssessment extends EAAbstract implements JsonSerializable {
+    function __construct(EAUser $user, ?int $id=null, ?array $arr=null){
+        EAAbstract::__construct($user);
+        $this->toDataArray($arr);
+    }
+    function save(){
+        $sql = "call saveAssessment(".$this->assign_id.", ".$this->lexeme_id.
+        ", ".$this->joy.
+        ", ".$this->trust.
+        ", ".$this->fear.
+        ", ".$this->surprise.
+        ", ".$this->sadness.
+        ", ".$this->disgust.
+        ", ".$this->anger.
+        ", ".$this->anticipation.
+        ")";
+        $x = $this->user->dblink->query($sql);
+        if ($this->user->dblink->errno || !$x) throw new EAException("Unexpected error while assign found: " . $this->user->dblink->errno . " - " . $this->user->dblink->error);
+        $y = $x->fetch_assoc();
+        if (!$y) throw new EAException("The assign not found!");
+        $x->free_result();
+        $this->user->dblink->next_result();
+        $this->toDataArray($y);
+    }
+    function __get($name){
+        if (key_exists($name, $this->data)) return $this->data[$name];
+        return null;
+    }
+}
 class EAAssign extends EAAbstract implements JsonSerializable {
     function __construct(EAUser $user, ?int $id=null, ?array $arr = null){
         EAAbstract::__construct($user);
@@ -66,6 +95,19 @@ class EAAssign extends EAAbstract implements JsonSerializable {
         $this->user->dblink->next_result();
         $this->toDataArray($y);
     }
+    function getAllAssessments(){
+        $sql = "call getAssessmentsByAssignID(".$this->id.")";
+        $x = $this->user->dblink->query($sql);
+        if ($this->user->dblink->errno || !$x) throw new EAException("Unexpected error while load assignment's assessments: " . $this->user->dblink->errno . " - " . $this->user->dblink->error);
+        
+        $this->data["assessments"] = [];
+        while ($y = $x->fetch_assoc()) {
+            $l = new EAAssessment($this->user, null, $y);
+            $this->data["assessments"][$y["lexeme_id"]] = $l;
+        }
+        $x->free_result();
+        $this->user->dblink->next_result();
+    }
 }
 class EASet extends EAAbstract implements JsonSerializable {
     /**
@@ -90,7 +132,7 @@ class EASet extends EAAbstract implements JsonSerializable {
             $this->data["lexemes"] = [];
             while ($y = $x->fetch_assoc()) {
                 $l = new EALexeme($this->user, null, $y);
-                $this->data["lexemes"][] = $l;
+                $this->data["lexemes"][$y["id"]] = $l;
             }
             $x->free_result();
             $this->user->dblink->next_result();

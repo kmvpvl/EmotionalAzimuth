@@ -59,15 +59,16 @@ function receiveHtmlFromServer(data, status) {
 }
 
 emotions = ['joy','trust','fear','surprise','sadness','disgust','anger','anticipation'];
-function drawFlower (emotion, w=75) {
-	R = w / 2;
-	r = R * 0.6;
-	N = 8;
-	s = '<svg class="flower" viewbox="-'+R+' -'+R+' '+w+' '+w+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="width:'+w+'px;height:'+w+'px;">';
+function drawFlower (element, emotion) {
+	var w = element.innerWidth();
+	var R = w / 2;
+	var r = R * 0.6;
+	var N = 8;
+	var s = '<svg class="flower" viewbox="-'+R+' -'+R+' '+w+' '+w+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="width:'+w+'px;height:'+w+'px;">';
 	if (emotion) {
 		for (i=0; i<N; i++) {
-			axis = emotion[emotions[i]];
-			if (!axis) R = 0;
+			var axis = parseFloat(emotion[emotions[i]]);
+			if (!axis) R = w/2;
 			else R = axis * w/2;
 			r = R * 0.6;
 			av = 2 * Math.PI * i / N;
@@ -79,11 +80,11 @@ function drawFlower (emotion, w=75) {
 			xc2 = Math.round(r * Math.sin(ac2));
 			yc1 = -Math.round(r * Math.cos(ac1));
 			yc2 = -Math.round(r * Math.cos(ac2));
-			s += '<path class="'+emotions[i]+'" d="M 0,0 L '+xc1+','+yc1+' Q '+xv+','+yv+' '+xc2+','+yc2+' L 0,0 z"></path>\n';
+			s += '<path class="'+(axis?emotions[i]:'dotted')+'" d="M 0,0 L '+xc1+','+yc1+' Q '+xv+','+yv+' '+xc2+','+yc2+' L 0,0 z"></path>\n';
 		}
 	}
 	s += '</svg>';
-	return s;
+	element.html(s);
 }
 function drawLexeme(lex) {
     s = "<lexeme lexeme_id='"+lex.id+"'>";
@@ -194,6 +195,14 @@ class EAAssign extends EventHandlerPrototype {
 			}
 		});
 	}
+	drawAssessments(element){
+		var s = '';
+		for (const [ind, val] of Object.entries(this.assessments)){
+			s = '<lexeme lexeme_id="'+val.lexeme_id+'"><flower></flower><lexeme-name>'+val.lexeme+'</lexeme-name></lexeme>';
+			element.append(s);
+			drawFlower($('lexeme[lexeme_id="'+val.lexeme_id+'"] > flower'), val);
+		}
+	}
 }
 
 class EASet extends EventHandlerPrototype {
@@ -222,7 +231,7 @@ class EASet extends EventHandlerPrototype {
 	draw(){
 		var s = '';
 		for (const [ind, val] of Object.entries(this.lexemes)){
-			s += '<lexeme><flower></flower><lexeme-name>'+val.lexeme+'</lexeme-name></lexeme>';
+			s += '<lexeme lexeme_id="'+val.id+'"><flower></flower><lexeme-name>'+val.lexeme+'</lexeme-name></lexeme>';
 		}
 		this.element.html(s);
 	}

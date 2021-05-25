@@ -28,7 +28,7 @@ instance {
   width: 100%;
   min-height: 100%;
   max-height: 100%;
-  overflow-y: auto;
+  overflow-y:hidden;
 }
 login-form {
   position: absolute;
@@ -73,6 +73,12 @@ login-form {
   fill:#e87200;
   background-color:#e87200;
 }
+.dotted {
+  fill:transparent;
+  stroke-width: 1px;
+  opacity: 0.05;
+  stroke: black;
+}
 .stopword {
   color: silver;
 }
@@ -107,7 +113,7 @@ assigns-header > span {
 }
 assigns {
   display: grid;
-  grid-template-rows: repeat(auto);
+  grid-template-rows: repeat(autofit, auto);
 }
 assign, assigns-header {
   display: grid;
@@ -139,10 +145,38 @@ exec-assign::before {
 exec-assign > exec-toolbar-control {
   display: block;
 }
+exec-toolbar-control > set-name::before {
+  content: "Name of set:";
+  font-weight: normal;
+}
+exec-toolbar-control > set-author::before {
+  content: "assigned by:";
+  font-weight: normal;
+}
+
+exec-toolbar-control > assign-due-date::before {
+  content: "Due:";
+  font-weight: normal;
+}
+
+exec-toolbar-control > assign-start-date::before {
+  content: "started:";
+  font-weight: normal;
+}
+exec-toolbar-control > set-author,
+exec-toolbar-control > assign-due-date,
+exec-toolbar-control > assign-start-date,
+exec-toolbar-control > set-name {
+  font-weight: bold;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  display: inline-block;
+}
 exec-assign > lexemes {
   display: grid;
   min-height: 100%;
-  grid-template-rows: repeat(auto);
+  grid-template-rows: repeat(autofit, auto);
+  overflow-y: auto;
 }
 exec-assign > lexemes > lexeme {
   display: grid;
@@ -150,7 +184,27 @@ exec-assign > lexemes > lexeme {
   cursor: pointer;
   vertical-align: middle;
 }
+exec-assign > lexemes > lexeme > lexeme-name {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
 exec-assign > lexemes > lexeme > flower{
   width:100px;
   height: 100px;
+}
+#dlgLexeme {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 100%;
+}
+#dlgLexemeSliders {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: repeat(autofit, auto);
+}
+
+.modal-body > flower {
+  width: 200px;
+  height:200px;
 }

@@ -1,13 +1,4 @@
 <div class="row">
-    <div class="col-8">
-        <flower id="dlgModalEditLexemeFlower"></flower>
-    </div>
-    <div class="col-4">
-        <input id="dlgModalEditLexemeEmotionIgnoreOnOff" type="checkbox" checked data-toggle="toggle" data-on="on" data-off="off" data-onstyle="success" data-offstyle="danger" data-width="75">
-        <input id="dlgModalEditLexemeEmotionIgnoreStopword" type="checkbox" checked data-toggle="toggle" data-on="ignore" data-off="include" data-onstyle="danger" data-offstyle="success" data-width="75">
-    </div>
-</div>
-<div class="row">
     <div class="col-7 joy">joy радость</div>
     <div class="col-5 joy">
         <input class="joy slider" modal_emotion="joy" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>

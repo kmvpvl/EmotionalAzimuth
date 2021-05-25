@@ -79,6 +79,15 @@ $(window).ready(function () {
 	$('#menuLogout').click(function(){
 		showLoginForm();
 	});
+	$('[modal_emotion]').on('input', function(){
+		//debugger;
+		var e = new Object();
+		for (const[i, v] of Object.entries(emotions)){
+			e[v] = $('[modal_emotion="'+v+'"]').val();
+		}
+		drawFlower($('.modal-body > flower'), e);
+
+	});
 });
 function showLoading() {
 	$("loading-wait").show();
@@ -154,7 +163,46 @@ function execAssign(assign_id) {
 		</div>
 	</div>
 	</div>
-	
 </login-form>
+<div class="modal fade" id="dlgLexemeModal" tabindex="-1" role="dialog" aria-labelledby="dlgLexemeModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+		<span id="dlgLexemeID"></span>
+        <h5 class="modal-title" id="dlgLexemeModalLongTitle">Import orders</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="dlgLexeme" class="modal-body">
+		<flower></flower>
+	  	<div id="dlgLexemeSliders">
+		<span class="joy">joy радость</span>
+		<input class="joy slider" modal_emotion="joy" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		<span class="trust">trust доверие</span>
+		<input class="trust slider" modal_emotion="trust" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		<span class="fear">fear страх</span>
+		<input class="fear slider" modal_emotion="fear" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		<span class="surprise">surprise удивление</span>
+		<input class="surprise slider" modal_emotion="surprise" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		<span class="sadness">sadness печаль</span>
+		<input class="sadness slider" modal_emotion="sadness" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		<span class="disgust">disgust отвращение</span>
+		<input class="disgust slider" modal_emotion="disgust" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		<span class="anger">anger злость</span>
+		<input class="anger slider" modal_emotion="anger" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		<span class="anticipation">anticipation ожидание</span>
+		<input class="anticipation slider" modal_emotion="anticipation" type="range" value="0" data-decimals="2" min="0" max="1" step="0.1"/>
+		</div>
+      </div>
+      <div class="modal-footer">
+		<button id="btn-save-prev" type="button" class="btn btn-success" data-dismiss="">Save&amp;Prev</button>
+    	<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    	<button id="btn-save-next" type="button" class="btn btn-success" data-dismiss="">Save&amp;Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
