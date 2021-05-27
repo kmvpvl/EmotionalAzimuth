@@ -174,6 +174,7 @@ class EAAssign extends EventHandlerPrototype {
 			if($(this).hasClass('selected')) {
 				$(this).removeClass('selected');
 			} else {
+				$("assign").removeClass('selected');
 				$(this).addClass('selected');
 				//debugger;
 				var a = $(this)[0].EAAssign;
