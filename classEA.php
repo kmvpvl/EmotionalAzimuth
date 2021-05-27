@@ -85,8 +85,8 @@ class EAAssign extends EAAbstract implements JsonSerializable {
             $this->toDataArray($arr);
         }
     }
-    function doStart(){
-        $sql = "call startAssign(".$this->id.")";
+    function doStartStop(bool $start){
+        $sql = "call ".($start?"startAssign":"stopAssign")."(".$this->id.")";
         $x = $this->user->dblink->query($sql);
         if ($this->user->dblink->errno || !$x) throw new EAException("Unexpected error while assign found: " . $this->user->dblink->errno . " - " . $this->user->dblink->error);
         $y = $x->fetch_assoc();

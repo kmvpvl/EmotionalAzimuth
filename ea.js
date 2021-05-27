@@ -97,7 +97,7 @@ function drawLexeme(lex) {
     return s;
 }
 function drawDate (d, locale='ru-RU') {
-	if (!d) return null;
+	if (!d) return '';
 	var options_date = {
 		year: "2-digit",
 		month: "2-digit",
@@ -160,12 +160,12 @@ class EAAssign extends EventHandlerPrototype {
 		var finish = null;
 		if (this.start_date) start = new Date(this.start_date);
 		if (this.finish_date) finish = new Date(this.finish_date);
-		s += '<assign-tools>'+'<i action="start" class="fa fa-play-circle" aria-hidden="true"></i>'+'</assign-tools>';
+		s += '<assign-tools>'+'<i action="start" class="fa fa-play-circle" aria-hidden="true"></i>'+'<i action="stop" class="fa fa-stop-circle" aria-hidden="true"></i>'+'</assign-tools>';
 		s += '<set-name>'+this.set_name+'</set-name>';
 		s += '<set-author>'+this.author+'</set-author>';
 		s += '<assign-due-date>'+drawDate(due)+'</assign-due-date>';
-		s += '<assign-start-date>'+drawDate(start)+'</assign-start-date>';
-		s += '<assign-finish-date>'+drawDate(finish)+'</assign-finish-date>';
+		s += '<assign-start-date>'+(start?drawDate(start):'<i class="fa fa-play-circle" aria-hidden="true"></i>')+'</assign-start-date>';
+		s += '<assign-finish-date>'+((finish || !start)?drawDate(finish):'<i class="fa fa-stop-circle" aria-hidden="true"></i>')+'</assign-finish-date>';
 //		s += ''++'';
 //		s += ''++'';
 //		s += ''++'';
@@ -175,6 +175,10 @@ class EAAssign extends EventHandlerPrototype {
 				$(this).removeClass('selected');
 			} else {
 				$(this).addClass('selected');
+				//debugger;
+				var a = $(this)[0].EAAssign;
+				a.showAction(null, false);
+				if (!a.finish_date) a.showAction(['start'], true);
 			}
 		});
 		var th = this;
@@ -183,13 +187,13 @@ class EAAssign extends EventHandlerPrototype {
 			event.stopPropagation();
 		});
 	}
-	doStart() {
+	doStartStop(startOrStop) {
 		var th = this;
-		sendDataToServer('apiStartAssign', {id: this.id}, function(data, status){
+		sendDataToServer('apiStartStopAssign', {id: this.id, start:startOrStop}, function(data, status){
 			var ls = recieveDataFromServer(data, status);
 			if (ls && ls.result=='OK') {
 				Object.assign(th, ls.data);
-				th.fireEvent('started', null);
+				th.fireEvent((startOrStop?'started':'stopped'), null);
 			} else {
 				showError("Object EAAssign damaged");
 			}
@@ -202,6 +206,22 @@ class EAAssign extends EventHandlerPrototype {
 			element.append(s);
 			drawFlower($('lexeme[lexeme_id="'+val.lexeme_id+'"] > flower'), val);
 		}
+	}
+	showAction(actions, showOrHide = true){
+		var i;
+		if (actions)	{
+			if (typeof(actions) === 'object'){
+				var s = '';
+				for (let [k, op] of Object.entries(actions)){
+					if (s.length > 0) s += ',';
+					s += 'i[action="'+op+'"]';
+				}
+				i = this.element.find(s);
+			} else i = this.element.find('i[action="'+actions+'"]');
+		} else i = this.element.find('i[action]');
+		if (showOrHide) {
+			i.show();
+		} else i.hide();
 	}
 }
 

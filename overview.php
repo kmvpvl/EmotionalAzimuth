@@ -14,10 +14,10 @@ function drawAssigns() {
         a.on('action', function(obj, data){
             switch(data.action) {
                 case 'start':
-                    a.on('started', function(obj, data){
+                    obj.on('started', function(obj, data){
                         execAssign(obj.id);
                     });
-                    a.doStart();
+                    obj.doStartStop(1);
                     break;
                 default:
             }

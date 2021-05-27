@@ -125,6 +125,9 @@ assign-tools {
   display:none;
   font-size: x-large;
 }
+assign-tools > i {
+  cursor: pointer;
+}
 assign.selected{
   background-color: blue;
   color: white;
@@ -135,15 +138,15 @@ assign.selected > assign-tools {
 }
 exec-assign {
   display: grid;
-  grid-template-rows: auto 1fr;
-}
-exec-assign::before {
-  content: 'Doing activity';
-  font-size: xx-large;
-  font-weight: bold;
+  grid-template-rows: auto auto 1fr;
+  grid-auto-rows: auto;
+  height:100%;
 }
 exec-assign > exec-toolbar-control {
-  display: block;
+  display: inline-block;
+}
+exec-assign > exec-toolbar-control > assign-tools{
+  display: inline-block;
 }
 exec-toolbar-control > set-name::before {
   content: "Name of set:";
@@ -173,10 +176,10 @@ exec-toolbar-control > set-name {
   display: inline-block;
 }
 exec-assign > lexemes {
-  display: grid;
-  min-height: 100%;
-  grid-template-rows: repeat(autofit, auto);
-  overflow-y: auto;
+  display: block;
+  padding: 5px;
+  overflow-y:auto;
+  height: 100%;
 }
 exec-assign > lexemes > lexeme {
   display: grid;

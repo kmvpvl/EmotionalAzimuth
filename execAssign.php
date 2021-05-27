@@ -1,4 +1,5 @@
 <exec-assign>
+    <h3>Doing assignment</h3>
     <exec-toolbar-control>
     </exec-toolbar-control>
     <lexemes>
@@ -23,7 +24,7 @@ function saveEmotion(){
             drawFlower($('lexeme[lexeme_id="'+ls.data.lexeme_id+'"] > flower'), ls.data);
             
         } else {
-            debugger;
+            //debugger;
             showError('Could not save assessment!');
         }
     });
@@ -67,11 +68,25 @@ sendDataToServer('apiGetAssign', {id: <?=$_POST["data"]["id"]?>}, function(data,
     if (ls && ls.result=='OK') {
         assignment = new EAAssign(ls.data, $('exec-toolbar-control'));
         assignment.draw();
+        assignment.showAction(null, false);
+        assignment.showAction(['stop'], true);
         assignment.drawAssessments($('lexemes'));
         $('lexeme').click(function(){
             loadEmotion($(this).attr('lexeme_id'));
             $('#dlgLexemeModal').modal('show');
-            //drawFlower($('.modal-body > flower'), {joy:1, trust:0.8});
+        });
+        assignment.on('action', function(obj, data){
+            switch(data.action) {
+                case 'stop':
+                    obj.on('stopped', function(obj, data){
+                        eaUser.assigns[obj.id].finish_date = obj.finish_date;
+                        clearInstance();
+                        loadInstance();
+                    });
+                    obj.doStartStop(0);
+                    break;
+                default:
+            }
         });
     } else {
         showError("Object EAAssign damaged");
