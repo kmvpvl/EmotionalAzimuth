@@ -116,7 +116,11 @@ function showLoginForm() {
 	$("login-form").show();
 }
 function tryLogin() {
-	if (!$("#username").val()) return;
+	if (!$("#username").val()) {
+		hideLoading();
+		showLoginForm();
+		return;
+	}
 	eaUser = new EAUser();
 	hideLoginForm();
 	eaUser.on('change', function(u, o){
