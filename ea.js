@@ -166,9 +166,6 @@ class EAAssign extends EventHandlerPrototype {
 		s += '<assign-due-date>'+drawDate(due)+'</assign-due-date>';
 		s += '<assign-start-date>'+(start?drawDate(start):'<i class="fa fa-play-circle" aria-hidden="true"></i>')+'</assign-start-date>';
 		s += '<assign-finish-date>'+((finish || !start)?drawDate(finish):'<i class="fa fa-stop-circle" aria-hidden="true"></i>')+'</assign-finish-date>';
-//		s += ''++'';
-//		s += ''++'';
-//		s += ''++'';
 		this.element.html(s);
 		this.element.click(function(){
 			if($(this).hasClass('selected')) {
