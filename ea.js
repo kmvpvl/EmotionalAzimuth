@@ -32,7 +32,7 @@ function recieveDataFromServer(data, status) {
 	switch (status) {
 		case "success":
 			try {
-				ls = JSON.parse(data);
+				ls = data;
 				if (ls.result == 'FAIL') {
 					showError("Application says: " + ls.description);
 				} 

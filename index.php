@@ -102,10 +102,10 @@ function hideLoginForm() {
  * 
  */
 function showError(_text) {
-	$('body').append('<error-message class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><span></span></error-message>');
+	var e = $('<error-message class="alert alert-danger alert-dismissible"><button type="button" class="close" data-dismiss="alert">&times;</button><span></span></error-message>');
+	$('body').append(e);
 	hideLoading();
-	$("error-message > span").html(_text);
-	//$("error-message").css('position', 'absolute');
+	e.find('span').html(_text);
 	$("error-message").show();
 }
 function clearInstance() {

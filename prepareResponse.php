@@ -7,6 +7,7 @@ if (!isset($_POST["username"]) || !isset($_POST["password"])) {
 
 require_once("classEA.php");
 function prepareJsonResponseData($callback, $object){
+    header('Content-Type: application/json');
     $ret = [];
     try {
         $ret["data"] = $callback($object);
