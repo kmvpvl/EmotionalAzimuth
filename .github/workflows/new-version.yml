@@ -19,5 +19,5 @@ jobs:
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
         server: emotional-azimuth.xyz
-        username: ${{ secrets.NEW_FTP_USR }}
-        password: ${{ secrets.NEW_FTP_PWD }}
+        username: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PWD }}
