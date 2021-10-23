@@ -18,6 +18,6 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
-        server: new-ea.imageek.ru
+        server: emotional-azimuth.xyz
         username: ${{ secrets.NEW_FTP_USR }}
         password: ${{ secrets.NEW_FTP_PWD }}
