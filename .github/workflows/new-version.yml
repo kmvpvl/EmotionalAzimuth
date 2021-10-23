@@ -20,4 +20,4 @@ jobs:
       with:
         server: emotional-azimuth.xyz
         username: ${{ secrets.FTP_USER }}
-        password: ${{ secrets.FTP_PWD }}
+        password: ${{ secrets.FTP_PASSWORD }}
